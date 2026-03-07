@@ -75,8 +75,9 @@
 | Website | MyAAC (PHP) | Latest |
 | Web Server | Nginx | Latest |
 | Web Runtime | PHP | 8.2 |
+| TLS / HTTPS | Let's Encrypt + Certbot | Free cert |
 | Containerization | Docker + Docker Compose | Latest |
-| OS | Ubuntu LTS | 22.04+ |
+| OS | Ubuntu Server | 24.04 LTS |
 | Map Editor | Remere's Map Editor (RME) | Latest |
 | Version Control | Git | — |
 

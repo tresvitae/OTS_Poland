@@ -15,9 +15,10 @@
 | **Protocol** | Tibia Protocol | **10.98** | Client ↔ server |
 | **Game Client** | OTClient Mehah | Latest | Player client (**market module OFF**) |
 | **Database** | MariaDB | 10.11 | Data store |
-| **Web Server** | Nginx | Latest | Reverse proxy |
+| **Web Server** | Nginx | Latest | Reverse proxy + **HTTPS termination** |
 | **Web Runtime** | PHP | **8.2** | AAC backend |
 | **Web App** | MyAAC | Latest (1.x) | Account management (MVP website) |
+| **TLS** | Let's Encrypt + Certbot | Latest | **Free HTTPS certificate** (auto-renew) |
 | **Scripting** | Lua | 5.2+ (bundled) | Game content |
 
 ---
@@ -67,6 +68,7 @@
 | MyAAC | MariaDB 10.11 | ✅ | Works as MySQL replacement |
 | MyAAC | TFS 1.4.2 schema | ✅ | Native support |
 | Nginx | PHP 8.2 (php-fpm) | ✅ | Standard setup |
+| Nginx | Let's Encrypt (Certbot) | ✅ | Free TLS cert, auto-renew every 90 days |
 
 ---
 
@@ -120,10 +122,25 @@ services:
   web:
     build:
       context: ./web
-    # PHP 8.2-fpm + Nginx pinned in Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"             # HTTPS
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+    # PHP 8.2-fpm + Nginx + Certbot pinned in Dockerfile
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - ./web/webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h; done'"
 
   backup:
     image: databack/mysql-backup
+
+volumes:
+  letsencrypt:
 ```
 
 **Dockerfile (TFS):**
@@ -187,12 +204,12 @@ COPY ./myaac /var/www/html
    └──────┬──────┘
           │
           ▼
-   ┌──────────────┐     ┌──────────────────┐
-   │ MariaDB      │◄───►│ MyAAC (PHP 8.2)  │
-   │ 10.11        │     │ + Nginx          │
-   └──────────────┘     └────────┬─────────┘
+   ┌──────────────┐     ┌──────────────────┐     ┌──────────┐
+   │ MariaDB      │◄───►│ MyAAC (PHP 8.2)  │◄───►│ Certbot  │
+   │ 10.11        │     │ + Nginx          │     │ (LE TLS) │
+   └──────────────┘     └────────┬─────────┘     └──────────┘
                                  │
-                            HTTP :80
+                         HTTPS :443 (+ :80 redirect)
                                  │
                            Player Browser
 ```
