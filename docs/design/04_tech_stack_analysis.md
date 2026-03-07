@@ -1,208 +1,198 @@
-# Technology Stack Analysis & Compatibility
+# Technology Stack — Final Decision & Analysis
 
 > **SDLC Stage 2: Design — Document 04**
-> Compatibility analysis of the decided technology stack
+> Updated: 2026-03-07 — MVP-focused stack analysis
 
 ---
 
-## 1. Decided Stack
+## 1. Final Stack (MVP)
 
 | Layer | Technology | Version | Role |
 |-------|-----------|---------|------|
-| **OS** | Ubuntu Server | 24.04 LTS | Host OS (VPS + local dev) |
-| **Orchestration** | Docker Compose | v2 (latest) | Container management |
-| **Game Server** | The Forgotten Server (TFS) | 1.4.2 | Game engine (C++) |
-| **Protocol** | Tibia Protocol | 10.98 | Client ↔ server communication |
-| **Game Client** | OTClient Mehah | Latest | Player-facing game client |
-| **Database** | MariaDB | 10.11+ | Persistent data store |
-| **Web Server** | Nginx | Latest | Reverse proxy + static files |
-| **Web Runtime** | PHP | 8.2 or 8.3 | AAC backend |
-| **Web App** | MyAAC | Latest (1.x) | Account management website |
-| **Scripting** | Lua | 5.2+ (bundled in TFS) | Game content & logic |
+| **OS** | Ubuntu Server | 24.04 LTS | VPS + local dev |
+| **Orchestration** | Docker Compose | v2 | Container management |
+| **Game Server** | The Forgotten Server (TFS) | **1.4.2** | Game engine (C++) |
+| **Protocol** | Tibia Protocol | **10.98** | Client ↔ server |
+| **Game Client** | OTClient Mehah | Latest | Player client (**market module OFF**) |
+| **Database** | MariaDB | 10.11 | Data store |
+| **Web Server** | Nginx | Latest | Reverse proxy |
+| **Web Runtime** | PHP | **8.2** | AAC backend |
+| **Web App** | MyAAC | Latest (1.x) | Account management (MVP website) |
+| **Scripting** | Lua | 5.2+ (bundled) | Game content |
 
 ---
 
-## 2. Compatibility Matrix
+## 2. Why TFS 1.4.2 (Not Nekiro TFS 1.5 Downgrades)
 
-```
-✅ = Confirmed compatible   ⚠️ = Works with caveats   ❌ = Conflict
-```
+> [!IMPORTANT]
+> **Nekiro's `TFS-1.5-Downgrades` does NOT support protocol 10.98.** It only has branches for:
+> - 7.72
+> - 8.0
+> - 8.60
+>
+> The project is also **discontinued** (August 2022). Using it for 10.98 would require writing a custom protocol downgrade from scratch — a massive, risky undertaking that contradicts our MVP approach.
 
-| Component A | Component B | Status | Notes |
-|------------|------------|--------|-------|
-| Ubuntu 24.04 | Docker Compose v2 | ✅ | Native support, ships in apt |
-| Ubuntu 24.04 | TFS 1.4.2 (compile) | ✅ | Boost 1.83 included; install `libboost-locale-dev`, `libboost-json-dev` |
-| TFS 1.4.2 | MariaDB 10.11 | ✅ | MariaDB is a drop-in MySQL replacement; TFS MySQL connector works |
-| TFS 1.4.2 | Protocol 10.98 | ✅ | TFS 1.4.2 was built for 10.98 — native match |
-| OTClient Mehah | Protocol 10.98 | ✅ | Confirmed working; Mehah supports 8.x through 13.x protocols |
-| OTClient Mehah | TFS 1.4.2 | ⚠️ | Works, but Mehah's **market module** was rewritten for Canary only — disable or patch |
-| MyAAC | PHP 8.2 | ✅ | v1.x explicitly supports PHP 8.1+; 8.2 fixes already merged |
-| MyAAC | PHP 8.3 | ✅ | Community-confirmed working; minor deprecation warnings possible |
-| MyAAC | MariaDB 10.11 | ✅ | Drop-in MySQL replacement; no schema issues |
-| MyAAC | TFS 1.4.2 schema | ✅ | MyAAC natively supports TFS 1.x schemas |
-| Nginx | PHP 8.x (php-fpm) | ✅ | Standard configuration; well-documented |
-| Docker | MariaDB 10.11 | ✅ | Official Docker image: `mariadb:10.11` |
-| Docker | TFS 1.4.2 | ✅ | Dockerfile compile from source inside container |
-| Docker | Nginx + PHP-FPM | ✅ | Many base images available |
+### Decision Matrix
+
+| Criteria | TFS 1.4.2 (Official) | Nekiro 1.5 Downgrades | TFS 1.6 (Latest) |
+|----------|----------------------|-----------------------|-------------------|
+| **Protocol 10.98** | ✅ **Native support** | ❌ No 10.98 branch | ❌ Targets 12.x+ |
+| **Stability** | ✅ Official stable release | ⚠️ Discontinued base | ⚠️ Newer, less tested |
+| **Community scripts** | ✅ Enormous library | ❌ Minimal | ⚠️ Limited |
+| **MyAAC compatibility** | ✅ Native | ⚠️ Schema differs | ⚠️ Schema differs |
+| **OTClient Mehah** | ✅ Confirmed working | ❓ Untested combo | ✅ Primary target |
+| **Datapack included** | ✅ Full | ❌ No datapack | ⚠️ Different format |
+| **MVP risk** | 🟢 Low | 🔴 **High** | 🟡 Medium |
+| **Protocol downgrade effort** | None needed | **Massive** (months of C++ work) | Massive |
+
+> **Verdict for MVP:** **TFS 1.4.2** is the only sensible choice for protocol 10.98. It's stable, well-documented, compatible with all other components in our stack, and has the largest ecosystem of community scripts.
 
 ---
 
-## 3. Component Deep Dive
+## 3. Compatibility Matrix
 
-### 3.1 OTClient Mehah (vs V8) — Why Mehah is Better
-
-| Aspect | OTClient V8 | OTClient Mehah |
-|--------|------------|----------------|
-| **Status** | ❌ Discontinued (stable but no updates) | ✅ **Actively maintained** |
-| **Protocol 10.98** | ✅ Native | ✅ Supported |
-| **Protocol 12.x+** | ❌ Requires heavy patching | ✅ Native |
-| **Rendering** | Good | **Better** (render optimization, anti-aliasing, floor shadowing) |
-| **Features** | Lighting, pathfinding, outfit module | All of V8's + **protobuf, text scaling, idle animations, crosshairs** |
-| **Battle module** | Slower | **Optimized** |
-| **Community** | Lots of legacy modules | Growing ecosystem, TFS team endorses it |
-| **Compilation (2025)** | Needs older libs, painful on modern OS | Compiles cleanly with modern toolchains |
-| **Future-proof** | 🔴 Dead end | 🟢 Will support future protocols |
-
-> **Verdict:** Mehah is the correct choice. It supports 10.98, is actively developed, and won't become a dead end if you upgrade protocol later.
-
-### 3.2 TFS 1.4.2 on Ubuntu 24.04
-
-**Confirmed working.** Ubuntu 24.04 ships Boost 1.83 which meets TFS requirements. Build dependencies:
-
-```bash
-sudo apt install -y \
-  build-essential cmake git \
-  libboost-all-dev libboost-locale-dev libboost-json-dev \
-  libluajit-5.1-dev libmysqlclient-dev \
-  libpugixml-dev libfmt-dev
+```
+✅ = Confirmed   ⚠️ = Minor caveat   ❌ = Conflict
 ```
 
-> ⚠️ **Note:** Compile inside Docker (multi-stage build) to keep the host clean and ensure reproducibility.
+| A | B | Status | Notes |
+|---|---|--------|-------|
+| Ubuntu 24.04 | Docker Compose v2 | ✅ | Native support |
+| Ubuntu 24.04 | TFS 1.4.2 compile | ✅ | Boost 1.83 included |
+| TFS 1.4.2 | Protocol 10.98 | ✅ | **Native match** |
+| TFS 1.4.2 | MariaDB 10.11 | ✅ | Drop-in MySQL replacement |
+| OTClient Mehah | Protocol 10.98 | ✅ | Confirmed on Otland |
+| OTClient Mehah | TFS 1.4.2 | ⚠️ | Market module → Canary only. **Turn it OFF** |
+| MyAAC | PHP 8.2 | ✅ | PHP 8.1+ required, 8.2 patches merged |
+| MyAAC | MariaDB 10.11 | ✅ | Works as MySQL replacement |
+| MyAAC | TFS 1.4.2 schema | ✅ | Native support |
+| Nginx | PHP 8.2 (php-fpm) | ✅ | Standard setup |
 
-### 3.3 MariaDB 10.11 with TFS
+---
 
-MariaDB 10.11 is an LTS release (supported until ~2028). Fully compatible with TFS's MySQL queries. No schema adjustments needed.
+## 4. MVP Stack Rules
+
+> Think **minimum effort, maximum stability.**
+
+| Principle | Decision |
+|-----------|----------|
+| **Use official, stable releases** | TFS 1.4.2 (not forks, not discontinued projects) |
+| **Don't modify C++ code** | All customization via Lua and config.lua |
+| **Use battle-tested combos** | TFS 1.4.2 + 10.98 + OTClient Mehah = proven triple |
+| **Turn off what you don't need** | Market module OFF, premium system OFF |
+| **Pin versions** | Lock every component to exact version in Docker |
+| **Prefer prebuilt where possible** | OTClient Mehah release binary, MariaDB Docker image |
+
+---
+
+## 5. OTClient Mehah — Market Module Disabled
+
+The Mehah market module was rewritten to work with Canary (not TFS 1.4.2). For MVP:
+
+**In OTClient Mehah `modules/` directory:**
+```
+modules/
+  game_market/           ← DISABLE (rename to game_market.disabled)
+```
+
+**Or in `modules/game_market/game_market.otmod`:**
+```yaml
+enabled: false
+```
+
+Market is a "Could" priority feature (FR-15.4). Not needed for MVP. Players trade using the **secure trade window** (FR-15.2) which works perfectly.
+
+---
+
+## 6. Version Pinning (Docker)
 
 ```yaml
-# docker-compose.yml snippet
-database:
-  image: mariadb:10.11
-  environment:
-    MYSQL_DATABASE: adventureots
+# docker-compose.yml
+services:
+  gameserver:
+    build:
+      context: ./server
+    # TFS 1.4.2 pinned via git tag in Dockerfile
+
+  database:
+    image: mariadb:10.11       # pinned
+
+  web:
+    build:
+      context: ./web
+    # PHP 8.2-fpm + Nginx pinned in Dockerfile
+
+  backup:
+    image: databack/mysql-backup
 ```
 
-### 3.4 MyAAC + PHP 8.2/8.3
-
-MyAAC v1.x requires PHP 8.1+. Confirmed patches for PHP 8.2 deprecations (`utf8_encode`/`utf8_decode`). PHP 8.3 community-confirmed.
-
-**Recommended: PHP 8.2** (wider testing, fewer edge-case warnings).
-
-### 3.5 Nginx + PHP-FPM
-
-Standard web stack. Nginx serves static assets, proxies PHP requests to `php-fpm`.
-
+**Dockerfile (TFS):**
+```dockerfile
+FROM ubuntu:24.04
+RUN apt-get update && apt-get install -y \
+  build-essential cmake git \
+  libboost-all-dev libluajit-5.1-dev \
+  libmysqlclient-dev libpugixml-dev libfmt-dev
+RUN git clone --branch release-1.4.2 --depth 1 \
+  https://github.com/otland/forgottenserver.git /srv/tfs
+WORKDIR /srv/tfs/build
+RUN cmake .. && make -j$(nproc)
 ```
-                    ┌───────────┐
-  :80/:443 ────────►│  Nginx    │
-                    │  (static) │
-                    │     │     │
-                    │     ▼     │
-                    │  PHP-FPM  │
-                    │  (MyAAC)  │
-                    └─────┬─────┘
-                          │
-                          ▼
-                    ┌───────────┐
-                    │ MariaDB   │
-                    │  10.11    │
-                    └───────────┘
+
+**Dockerfile (Web):**
+```dockerfile
+FROM php:8.2-fpm-alpine
+RUN docker-php-ext-install pdo_mysql mysqli
+COPY ./myaac /var/www/html
 ```
 
 ---
 
-## 4. Identified Risks & Mitigations
+## 7. Risks (MVP-Focused)
 
 | # | Risk | Severity | Mitigation |
 |---|------|----------|------------|
-| R1 | **Mehah market module incompatible with TFS 1.4.2** — rewritten for Canary server only | 🟡 Medium | Disable market module in OTClient or use community TFS-compatible patch. Market is a "Could" requirement anyway |
-| R2 | **PHP 8.3 deprecation warnings** in some MyAAC plugins | 🟢 Low | Use PHP 8.2 instead (stable, tested). Upgrade later when MyAAC catches up |
-| R3 | **TFS compile warnings** with GCC 14 on Ubuntu 24.04 | 🟢 Low | Compile inside Docker with pinned Ubuntu 22.04 base if needed; or suppress non-critical warnings |
-| R4 | **RSA key mismatch** between Mehah client and TFS | 🟡 Medium | Replace default RSA keys on both sides during setup; document the process |
-| R5 | **Black squares in custom map** on OTClient | 🟢 Low | Ensure `items.otb` version matches protocol 10.98; use correct Tibia.dat/Tibia.spr pair |
-| R6 | **Docker networking** — containers can't see each other | 🟢 Low | Use Docker Compose network; reference services by container name (e.g., `database` not `localhost`) |
+| R1 | Mehah market module crashes with TFS 1.4.2 | 🟡 Medium | **Disable it** — already decided |
+| R2 | RSA key mismatch (client ↔ server) | 🟡 Medium | Replace RSA keys on both sides during setup |
+| R3 | PHP 8.2 deprecation warnings in MyAAC | 🟢 Low | Known patches exist; non-blocking |
+| R4 | Missing Tibia.dat/Tibia.spr for 10.98 | 🟢 Low | Use verified 10.98 data files from community |
+| R5 | TFS compile fail on Ubuntu 24.04 | 🟢 Low | Build inside Docker; Ubuntu 24.04 confirmed working |
 
 ---
 
-## 5. Version Pinning Strategy
+## 8. Future Upgrade Path
 
-> Pin exact versions in Docker images and config to prevent "works on my machine" issues.
-
-| Component | Pin To | How |
-|-----------|--------|-----|
-| Ubuntu | 24.04 | `FROM ubuntu:24.04` in Dockerfile |
-| MariaDB | 10.11 | `image: mariadb:10.11` in docker-compose |
-| PHP | 8.2 | `FROM php:8.2-fpm` in web Dockerfile |
-| Nginx | stable | `FROM nginx:stable-alpine` |
-| TFS | 1.4.2 | Git tag: `git checkout release-1.4.2` |
-| OTClient Mehah | Latest release tag | Pin to specific release commit hash |
-| Boost | 1.83 (apt) | System package in Docker build |
+| When | What | From → To |
+|------|------|----------|
+| Post-MVP (optional) | Protocol upgrade | 10.98 → 12.x (with Mehah) |
+| Post-MVP (optional) | Server upgrade | TFS 1.4.2 → TFS 1.6 |
+| Post-MVP (optional) | Re-enable market | Patch Mehah market for TFS |
+| Post-MVP (optional) | Custom domain | Duck DNS → .xyz or .pl |
 
 ---
 
-## 6. Final Docker Compose Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│                 Docker Compose                   │
-│                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌───────────────┐ │
-│  │ TFS      │  │ MariaDB  │  │ Nginx + PHP   │ │
-│  │ 1.4.2    │  │ 10.11    │  │ 8.2-FPM       │ │
-│  │          │  │          │  │ (MyAAC)        │ │
-│  │ :7171    │  │ :3306    │  │ :80 / :443    │ │
-│  │ :7172    │  │ (int)    │  │               │ │
-│  └────┬─────┘  └─────┬────┘  └───────┬───────┘ │
-│       │               │              │          │
-│       └───────────────┴──────────────┘          │
-│              otsnet (bridge)                     │
-│                                                  │
-│  ┌──────────┐                                   │
-│  │ Backup   │  ← daily mysqldump                │
-│  │ service  │                                   │
-│  └──────────┘                                   │
-└─────────────────────────────────────────────────┘
-         │                           │
-    :7171/:7172                   :80/:443
-         │                           │
-    ┌────┴────┐               ┌──────┴──────┐
-    │OTClient │               │  Browser    │
-    │ Mehah   │               │ (MyAAC)     │
-    └─────────┘               └─────────────┘
-```
-
----
-
-## 7. Verdict
+## 9. Verdict
 
 > [!TIP]
-> **This stack is solid. No blocking conflicts detected.**
+> **Stack is locked for MVP. No conflicts. Ready for implementation.**
 
-| Aspect | Assessment |
-|--------|-----------|
-| **Overall compatibility** | ✅ All components are confirmed compatible |
-| **Biggest advantage** | Mehah (actively maintained) + Docker (reproducible) + Ubuntu 24.04 LTS (supported until 2029) |
-| **Biggest risk** | Market module on Mehah (minor — just disable it, it's a "Could" feature) |
-| **Recommended PHP** | 8.2 (over 8.3) for maximum AAC stability |
-| **Future upgrade path** | Clean — can upgrade TFS and protocol later without changing infra |
-
----
-
-## 8. Open Questions for Improvement
-
-| # | Question | Impact |
-|---|----------|--------|
-| Q1 | **Which VPS provider?** (Hetzner, OVH, DigitalOcean, Contabo?) | Affects price, DDoS protection, location (EU/PL for low latency) |
-| Q2 | **VPS specs?** (1 vCPU/1 GB RAM minimum, or more?) | TFS + MariaDB + Nginx in Docker needs at least 1 GB; 2 GB recommended |
-| Q3 | **HTTPS for website?** (Let's Encrypt free cert or skip for friends-only?) | Recommended even for private — free with Certbot |
-| Q4 | **TFS 1.4.2 or 1.5?** Mehah supports both. 1.5 has newer features but less community scripts | Could affect available Lua scripts and creature/spell XML packs |
-| Q5 | **Build OTClient Mehah from source or use a release binary?** | Building from source gives full control but takes time; prebuilt binary is faster |
+```
+   OTClient Mehah (10.98, market OFF)
+          │
+     TCP :7171/:7172
+          │
+   ┌──────┴──────┐
+   │ TFS 1.4.2   │◄──── Lua scripts + config.lua
+   │ (10.98)     │◄──── map.otbm + spawns
+   └──────┬──────┘
+          │
+          ▼
+   ┌──────────────┐     ┌──────────────────┐
+   │ MariaDB      │◄───►│ MyAAC (PHP 8.2)  │
+   │ 10.11        │     │ + Nginx          │
+   └──────────────┘     └────────┬─────────┘
+                                 │
+                            HTTP :80
+                                 │
+                           Player Browser
+```
