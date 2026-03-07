@@ -2,7 +2,8 @@
 
 > **Document:** 00 — Project Charter
 > **Date:** 2026-03-07
-> **Status:** Draft — Pending Stakeholder Approval
+> **Last Updated:** 2026-03-07
+> **Status:** ✅ Approved — All design decisions confirmed
 
 ---
 
@@ -19,7 +20,7 @@
 
 ### Vision Statement
 
-> Build a private Tibia Open Server from scratch for a small group of neighbourhood friends — delivering the authentic Tibia MMORPG experience with custom content, on a self-hosted infrastructure.
+> Build a private Tibia Open Server from scratch for a small group of neighbourhood friends — delivering a **dark fantasy RPG experience** with custom Polish-language lore, staged progression (levels 1–100), and Open PvP, deployed on a VPS with a public domain.
 
 ---
 
@@ -44,9 +45,10 @@
 | **Game Client** | OTClient V8 customized with server branding |
 | **Database** | MariaDB 10.11 with full schema (accounts, players, items, houses) |
 | **Website** | MyAAC — account registration, character management, highscores, server info |
-| **Custom Map** | Original map with towns, dungeons, quest areas (~500×500 tiles) |
+| **Custom Map** | Dark fantasy original map, levels 1–100 content, base town (~500×500 tiles) |
 | **Game Content** | Lua scripts for creatures, spells, NPCs, quests, events |
-| **Deployment** | Docker Compose on Ubuntu (local machine or VPS) |
+| **Deployment** | Docker Compose — local (dev) + VPS (test/prod), public IP, domain name |
+| **Language** | NPCs & webapp in Polish 🇵🇱, code/config/docs in English 🇬🇧 |
 | **Documentation** | Setup guide, admin guide, player guide |
 
 ### 3.2 Out of Scope (Phase 1)
@@ -167,9 +169,9 @@
 
 | Role | Person | Responsibilities |
 |------|--------|-----------------|
-| **Project Owner / Admin** | tresvitae | Architecture decisions, server admin, development |
+| **Solo Developer / Admin** | tresvitae | All development, infrastructure, map, scripts, admin |
 | **Players** | Friends (5–10) | Playtesting, feedback, content ideas |
-| **GM (Game Master)** | TBD (1–2 friends) | In-game moderation, event hosting |
+| **GM (Game Master)** | tresvitae (self) | In-game moderation, event hosting |
 
 ---
 
@@ -177,10 +179,11 @@
 
 | Constraint | Details |
 |-----------|---------|
-| **Budget** | $0–$10/month (free hosting or cheap VPS) |
-| **Team size** | 1 developer (tresvitae) + volunteer helpers |
+| **Budget** | $0–$10/month (cheap VPS + free domain) |
+| **Team size** | **1 solo developer** (tresvitae) — code, infra, map, content |
 | **Timeline** | No hard deadline — hobby project |
-| **Hardware** | Available: local machine or $5–10 VPS |
+| **Hardware** | Local machine (dev) + VPS (test/prod) |
+| **Availability** | Server runs on **scheduled hours** (not 24/7) |
 | **Legal** | OTS is community/fan project; no commercial use |
 
 ---
@@ -198,44 +201,93 @@
 
 ---
 
-## 12. Open Questions for Improvement
+## 12. Design Decisions (Answered)
 
-> [!IMPORTANT]
-> These questions should be answered before moving to Phase 2 (System Design). They will shape key design decisions.
+> ✅ All questions answered on 2026-03-07. These decisions are now **locked** for Phase 2+.
 
-### Game Design Questions
+### Game Design Decisions
 
-| # | Question | Impact |
-|---|----------|--------|
-| Q1 | **What Tibia era do you want to emulate?** (7.4 old school, 8.6 classic, 10.x modern?) | Affects creature roster, spell list, items, and nostalgia factor |
-| Q2 | **Experience/skill rate multiplier?** (1x real Tibia, 5x fast, 50x ultra?) | Determines how quickly friends hit endgame |
-| Q3 | **PvP type?** (Open PvP, Optional PvP, Hardcore PvP?) | Changes entire combat/social dynamic |
-| Q4 | **Custom lore/theme or replica of real Tibia?** | Affects map design, NPC names, quest narratives |
-| Q5 | **How many vocations?** (Classic 4 or add custom ones like Monk?) | Impacts balance and spell/item design |
+| # | Question | **Decision** |
+|---|----------|-------------|
+| Q1 | Tibia era / protocol | **Tibia 10.98** (TFS 1.4.2 + OTClient V8) |
+| Q2 | Experience rate | **Staged: ~20x–50x at low levels → 2x–3x at high levels** |
+| Q3 | PvP type | **Open PvP** |
+| Q4 | Lore / theme | **Custom lore, dark fantasy RPG** (not a Tibia replica) |
+| Q5 | Vocations | **Classic 4** — Knight, Paladin, Sorcerer, Druid |
 
-### Map & Content Questions
+### Map & Content Decisions
 
-| # | Question | Impact |
-|---|----------|--------|
-| Q6 | **Starting town name and theme?** (Medieval? Fantasy? Polish-themed?) | Sets creative direction for the entire map |
-| Q7 | **Real Tibia map or fully custom?** | Custom = unique but more work; real = nostalgic but less original |
-| Q8 | **Level range of initial content?** (1–50? 1-100? 1-200?) | Determines amount of creatures, spawns, and quest content needed |
+| # | Question | **Decision** |
+|---|----------|-------------|
+| Q6 | Map theme | **Dark fantasy** — base town with gothic/medieval atmosphere |
+| Q7 | Real or custom map | **Fully custom** — original world design |
+| Q8 | Level range | **Levels 1–100** (full content for MVP) |
 
-### Infrastructure Questions
+### Infrastructure Decisions
 
-| # | Question | Impact |
-|---|----------|--------|
-| Q9 | **Host locally or on a VPS?** | Local = free but requires port forwarding/VPN; VPS = $5-10/month, always-on |
-| Q10 | **How will friends connect?** (LAN, VPN like Tailscale/ZeroTier, or public IP?) | Affects firewall, DDoS exposure, and setup complexity |
-| Q11 | **Domain name?** (e.g., adventure-ots.pl, or just IP address?) | Affects website URL, client config, and first impression |
+| # | Question | **Decision** |
+|---|----------|-------------|
+| Q9 | Hosting model | **Local** (development) + **VPS** (testing & production) |
+| Q10 | Player connection | **Public IP** (via VPS), domain name for easy access |
+| Q11 | Domain name | **Use a domain** — see recommendations below |
 
-### Team & Process Questions
+### Team & Process Decisions
 
-| # | Question | Impact |
-|---|----------|--------|
-| Q12 | **Any friends willing to help with map creation or Lua scripting?** | More hands = faster content; could assign roles |
-| Q13 | **How often should the server run?** (24/7 or scheduled hours?) | Affects hosting choice and expectations |
-| Q14 | **Language for in-game content?** (Polish? English? Mix?) | Affects NPC dialogues, quest text, website language |
+| # | Question | **Decision** |
+|---|----------|-------------|
+| Q12 | Team composition | **Solo developer** — tresvitae handles all code, infra, map, content |
+| Q13 | Server schedule | **Scheduled hours** (announced in advance, not 24/7) |
+| Q14 | Language | **Polish** 🇵🇱 for NPC dialogues + webapp · **English** 🇬🇧 for code, configs, docs |
+
+---
+
+## 13. Domain Name Recommendations
+
+### Free Options
+
+| Service | Domain Format | Best For | Notes |
+|---------|-------------|----------|-------|
+| **Duck DNS** | `adventure-ots.duckdns.org` | ★★★★★ | Free, supports dynamic IP, instant setup, no signup |
+| **No-IP** | `adventure-ots.ddns.net` | ★★★★ | Free tier (3 hostnames), well-known, auto-updater |
+| **freedns.afraid.org** | `adventure-ots.mooo.com` (+ many others) | ★★★★ | Free, huge selection of subdomains |
+| **eu.org** | `adventure-ots.eu.org` | ★★★ | Free for EU individuals, looks professional, slow approval |
+
+### Cheap Paid Options (~$1–3/year)
+
+| Registrar | Domain | Price | Notes |
+|-----------|--------|-------|-------|
+| **Namecheap** | `adventure-ots.xyz` | ~$1/year | Cheapest real TLD, full control |
+| **Namecheap** | `adventure-ots.online` | ~$2/year | Clean and modern |
+| **OVH** | `adventure-ots.ovh` | ~$3/year | Included with OVH VPS |
+
+> **Recommendation:** Start with **Duck DNS** (free, instant, works with VPS). If you want something more polished later, buy a `.xyz` or `.online` domain for ~$1–3/year on Namecheap.
+
+---
+
+## 14. Experience Stages Configuration
+
+> Based on decision Q2: Staged rates starting high and decreasing.
+
+| Level Range | Experience Rate | Skill Rate | Magic Rate | Rationale |
+|-------------|----------------|-----------|------------|----------|
+| 1 – 20 | **50x** | 30x | 15x | Fast start, get into the game quickly |
+| 21 – 40 | **30x** | 20x | 10x | Still quick, learning vocations |
+| 41 – 60 | **15x** | 10x | 8x | Slowing down, content gets serious |
+| 61 – 80 | **5x** | 5x | 5x | Meaningful grind, quest-focused |
+| 81 – 100 | **3x** | 3x | 3x | Endgame, hard-earned progress |
+| 100+ | **2x** | 2x | 2x | Post-MVP expansion content |
+
+Configured in `data/XML/stages.xml`:
+```xml
+<stages>
+  <stage minlevel="1" maxlevel="20" multiplier="50" />
+  <stage minlevel="21" maxlevel="40" multiplier="30" />
+  <stage minlevel="41" maxlevel="60" multiplier="15" />
+  <stage minlevel="61" maxlevel="80" multiplier="5" />
+  <stage minlevel="81" maxlevel="100" multiplier="3" />
+  <stage minlevel="101" maxlevel="999" multiplier="2" />
+</stages>
+```
 
 ---
 
@@ -243,7 +295,7 @@
 
 | Stakeholder | Status | Date |
 |-------------|--------|------|
-| tresvitae (Project Owner) | ⬜ Pending | — |
+| tresvitae (Project Owner) | ✅ Approved | 2026-03-07 |
 
 ---
 
