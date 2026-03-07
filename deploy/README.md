@@ -1,0 +1,1 @@
+[FAZA WDROŻENIA] Pliki Docker, konfiguracja CI/CD, Github Actions

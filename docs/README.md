@@ -1,1 +1,11 @@
-[FAZA ANALIZY] User stories, schematy grafów (Mermaid/PNG)
+# Adventure OTS — Documentation
+
+> **[FAZA ANALIZY]** User stories, schematy grafów (Mermaid/PNG)
+
+## SDLC Stage 1: Research & Analysis
+
+| # | Document | Status |
+|---|----------|--------|
+| 01 | [Technology Requirements](01_technology_requirements.md) | ✅ Complete |
+| 02 | [System Architecture](02_architecture.md) | ✅ Complete |
+| 03 | User Stories & Game Design | 🔜 Planned |
