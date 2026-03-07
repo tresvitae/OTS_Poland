@@ -71,9 +71,10 @@
 | Protocol | Tibia Protocol | 10.98 |
 | Scripting | Lua | 5.2+ |
 | Database | MariaDB | 10.11 |
-| Game Client | OTClient V8 | Latest |
+| Game Client | OTClient Mehah | Latest |
 | Website | MyAAC (PHP) | Latest |
 | Web Server | Nginx | Latest |
+| Web Runtime | PHP | 8.2 |
 | Containerization | Docker + Docker Compose | Latest |
 | OS | Ubuntu LTS | 22.04+ |
 | Map Editor | Remere's Map Editor (RME) | Latest |
