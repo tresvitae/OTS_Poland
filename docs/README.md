@@ -1,0 +1,1 @@
+[FAZA ANALIZY] User stories, schematy grafów (Mermaid/PNG)

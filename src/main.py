@@ -1,0 +1,1 @@
+# Punkt wejścia do aplikacji

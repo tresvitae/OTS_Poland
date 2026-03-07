@@ -1,0 +1,1 @@
+# Definicje poszczególnych agentów (prompty, narzędzia)

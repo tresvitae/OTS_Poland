@@ -1,0 +1,1 @@
+[SPECYFICZNE DLA AI] Zbiory testowe (tzw. golden datasets) do oceny jakości AI
