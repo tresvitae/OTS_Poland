@@ -1,39 +1,114 @@
-[FAZA WDROŻENIA] Pliki Docker, konfiguracja CI/CD, Github Actions
+# [FAZA WDROŻENIA] Multi-Agent LangChain System — Adventure OTS
 
+> Platforma agentowa oparta o **LangChain + LangGraph** do wspomagania projektowania, konfiguracji, testowania i administracji serwera OTS.
 
- „Platforma agentowa oparta o LangGraph do wspomagania projektowania, konfiguracji, testowania i administracji serwera OTS"
+---
 
+## Architektura: Hierarchiczny Supervisor
 
-Najlepszy wzorzec LangGraph
-Dla takiego projektu polecam hierarchical supervisor. Dokumentacja pokazuje, że gdy agentów robi się więcej, pojedynczy supervisor może sobie gorzej radzić, więc lepiej zrobić supervisorów zespołowych i jednego nadrzędnego koordynatora; to bardzo dobrze pasuje do podziału na content team, operations team i support team.
-​
+Wybrany wzorzec: **hierarchical supervisor** — gdy agentów jest więcej, pojedynczy supervisor gorzej sobie radzi, więc zastosowano supervisorów zespołowych i jednego nadrzędnego koordynatora.
 
-Przykład logiczny:
+```
+                    Użytkownik
+                        │
+                        ▼
+              ┌─────────────────────┐
+              │   TOP SUPERVISOR    │ ← Odbiera polecenie, routuje
+              │   (Router Agent)    │
+              └──────────┬──────────┘
+                         │ route_task()
+          ┌──────────────┼──────────────┐──────────────┐
+          ▼              ▼              ▼              ▼
+    ┌───────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐
+    │ BACKEND   │ │ FRONTEND   │ │INTEGRATION │ │  CONTENT   │
+    │ TEAM      │ │ TEAM       │ │ TEAM       │ │  TEAM      │
+    │───────────│ │────────────│ │────────────│ │────────────│
+    │• DevOps   │ │• OTClient  │ │• World     │ │• Lore &    │
+    │• Lua      │ │  Lua Dev   │ │  Integrator│ │  NPC Writer│
+    │  Scripter │ │• Web/PHP   │ │  XML Parser│ │  Dark      │
+    │           │ │  Developer │ │            │ │  Fantasy   │
+    └─────┬─────┘ └─────┬──────┘ └─────┬──────┘ └─────┬──────┘
+          └─────────────┴───────┬──────┴───────────────┘
+                                ▼
+                      ┌─────────────────┐
+                      │   QA GATE       │
+                      │   QA/Reviewer   │ ← Validacja kodu
+                      │   PASS/WARN/FAIL│
+                      └────────┬────────┘
+                               ▼
+                          WYNIK → Użytkownik
+```
 
-Top Supervisor
+---
 
-Content Supervisor → quest agent, dialog agent, map event agent
+## Zespoły Agentów
 
-Ops Supervisor → log agent, anomaly agent, economy agent
+### 1. Zarządzanie i Kontrola Jakości
+| Agent | Rola |
+|-------|------|
+| **Supervisor (Router)** | Odbiera polecenia, analizuje i kieruje do zespołu |
+| **QA/Reviewer** | Czyta kod Lua/PHP/XML, szuka bugów, waliduje TFS 1.4.2 |
 
-Support Supervisor → ticket agent, moderation agent
+### 2. Zespół Backendowy (Serwer & Baza)
+| Agent | Rola |
+|-------|------|
+| **DevOps Agent** | Docker Compose, Dockerfiles, SQL, config.lua, VPS |
+| **Lua Engine Scripter** | Skrypty data/ — questy, bossy, spawny, mechaniki |
 
-Zakres projektu inżynierskiego
-Jeśli to ma być projekt dyplomowy lub semestralny, nie próbuj robić pełnego MMO od zera. Lepiej postawić tezę: bierzesz istniejący silnik OTS, który i tak potrzebuje plików serwera oraz bazy danych, a następnie budujesz nad nim warstwę agentową, która automatyzuje wybrane procesy projektowe i operacyjne.
+### 3. Zespół Frontendowy (WWW & Klient)
+| Agent | Rola |
+|-------|------|
+| **OTClient Lua Dev** | Moduły klienta, IP/RSA, interfejs gracza |
+| **Web/PHP Developer** | MyAAC, szablony PHP, CSS dark-fantasy, strona |
 
-Dobry, realistyczny zakres MVP:
+### 4. Zespół Integracji Świata
+| Agent | Rola |
+|-------|------|
+| **World Integrator & XML Parser** | Parsuje XML mapy, przekazuje koordynaty |
 
-uruchomienie istniejącego serwera OTS i DB,
-​
+### 5. Zespół Contentu (Świat Gry)
+| Agent | Rola |
+|-------|------|
+| **Lore & NPC Writer** | Dialogi NPC, opisy dark-fantasy, klimat |
 
-zbieranie eventów z gry do API lub kolejki,
-​
+---
 
-supervisor w LangGraph,
-​
+## Kluczowe informacje
 
-3 agentów specjalistycznych, np. Balance, QA, GM,
-​
+> **⚠️ Mapa NIE jest generowana przez AI.**
+> Jest pobierana jako gotowy plik `.otbm`. LLM nie potrafi operować na binarnych plikach map.
+> World Integrator Agent jedynie **parsuje XML-e** towarzyszące mapie (`map-spawns.xml`, `map-houses.xml`) i wyciąga koordynaty.
 
-panel administracyjny z rekomendacjami i zatwierdzaniem akcji przez człowieka.
-​
+## Stack technologiczny
+
+| Komponent | Technologia |
+|-----------|-------------|
+| LLM | Anthropic Claude (Sonnet) |
+| Framework | LangChain + LangGraph |
+| Monitoring | LangSmith Tracing |
+| Silnik gry | TFS 1.4.2 (protokół 10.98) |
+| Baza | MariaDB 10.11 |
+| Strona | MyAAC + PHP 8.2 + Nginx |
+| Klient | OTClient Mehah |
+
+## Uruchomienie
+
+```bash
+# 1. Zainstaluj zależności
+pip install -e .
+
+# 2. Skonfiguruj .env (skopiuj z .env.example)
+cp .env.example .env
+# Edytuj .env — wstaw klucz Anthropic API
+
+# 3. Uruchom system agentów
+python src/main.py
+```
+
+## Zakres MVP
+
+- Uruchomienie istniejącego serwera OTS i DB
+- Supervisor w LangGraph z routingiem do zespołów
+- 8 agentów specjalistycznych (DevOps, Lua, OTClient, Web, Integrator, Content, Supervisor, QA)
+- QA Gate — obowiązkowa recenzja kodu przed zwróceniem wyniku
+- Interaktywna pętla CLI z rekomendacjami
