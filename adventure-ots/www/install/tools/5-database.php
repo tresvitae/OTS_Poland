@@ -207,6 +207,7 @@ if ($db->hasTable('players')) {
 		}
 	}
 
+/*
 	if ($db->hasColumn('players', 'rank_id')) {
 		if (query("ALTER TABLE players MODIFY `rank_id` INT(11) NOT NULL DEFAULT 0;"))
 			success($locale['step_database_modifying_field'] . ' players.rank_id...');
@@ -217,8 +218,10 @@ if ($db->hasTable('players')) {
 			}
 		}
 	}
+*/
 }
 
+/*
 if($db->hasTable('z_forum')) {
 	if(!$db->hasColumn('z_forum', 'post_html')) {
 		if(query("ALTER TABLE `z_forum` ADD `post_html` tinyint(1) NOT NULL DEFAULT '0' AFTER `post_smile`;")) {
@@ -238,3 +241,4 @@ if($db->hasTable('z_forum')) {
 		}
 	}
 }
+*/

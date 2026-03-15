@@ -1,11 +1,17 @@
 FROM php:8.2-apache
 
-# Instalacja rozszerzeń PHP wymaganych przez MyAAC
+# Instalacja rozszerzeń PHP oraz Node.js dla MyAAC frontend
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
     git \
-    && docker-php-ext-install pdo pdo_mysql zip bcmath \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    nodejs \
+    npm \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql zip bcmath gd \
     && a2enmod rewrite \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -20,8 +26,9 @@ COPY . /var/www/html/
 
 WORKDIR /var/www/html
 
-# Instalacja zależności Composera
-RUN composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || true
+# Instalacja zależności (Composer + NPM)
+RUN composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || true \
+    && npm install || true
 
 # Kopia .htaccess z dystrybucyjnego
 RUN if [ -f .htaccess.dist ] && [ ! -f .htaccess ]; then cp .htaccess.dist .htaccess; fi
