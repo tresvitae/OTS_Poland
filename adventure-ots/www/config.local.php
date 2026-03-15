@@ -2,7 +2,7 @@
 // MyAAC - Local Configuration for Docker MVP
 // Te ustawienia nadpisują wartości z config.lua
 
-$config['installed'] = true;
+$config['installed'] = false;  // Set to false for first run — MyAAC installer creates myaac_* tables
 $config['database_overwrite'] = true;
 
 // Baza danych (musi być zgodne z docker-compose.yml)
