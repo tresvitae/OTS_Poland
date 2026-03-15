@@ -1,29 +1,38 @@
-FROM alpine:3.15.0 AS build
-# crypto++-dev is in edge/testing
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+# ==========================================
+# Stage 1: Build TFS from source
+# ==========================================
+FROM alpine:3.19 AS build
+
+RUN apk add --no-cache \
   binutils \
   boost-dev \
   build-base \
-  clang \
   cmake \
   crypto++-dev \
   fmt-dev \
   gcc \
+  g++ \
   gmp-dev \
   luajit-dev \
   make \
   mariadb-connector-c-dev \
-  pugixml-dev
+  pugixml-dev \
+  git
 
 COPY cmake /usr/src/forgottenserver/cmake/
 COPY src /usr/src/forgottenserver/src/
 COPY CMakeLists.txt /usr/src/forgottenserver/
-WORKDIR /usr/src/forgottenserver/build
-RUN cmake .. && make
 
-FROM alpine:3.15.0
-# crypto++ is in edge/testing
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ \
+WORKDIR /usr/src/forgottenserver/build
+RUN cmake -DCMAKE_BUILD_TYPE=Release -DSKIP_GIT=ON .. && make -j$(nproc)
+
+# ==========================================
+# Stage 2: Runtime image (minimal)
+# ==========================================
+FROM alpine:3.19
+
+RUN apk add --no-cache \
+  boost-date_time \
   boost-iostreams \
   boost-system \
   boost-filesystem \
@@ -36,9 +45,8 @@ RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/te
 
 COPY --from=build /usr/src/forgottenserver/build/tfs /bin/tfs
 COPY data /srv/data/
-COPY LICENSE README.md *.dist *.sql key.pem /srv/
+COPY *.dist *.sql /srv/
 
 EXPOSE 7171 7172
 WORKDIR /srv
-VOLUME /srv
 ENTRYPOINT ["/bin/tfs"]
