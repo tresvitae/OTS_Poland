@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # Baza danych - MariaDB 10.11 LTS
+  # ========================================
+  db:
+    image: mariadb:10.11
+    container_name: ots_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: twoje_haslo
+      MYSQL_DATABASE: ots_baza
+      MYSQL_USER: forgottenserver
+      MYSQL_PASSWORD: tibia_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./tfs/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/02_seed_data.sql:/docker-entrypoint-initdb.d/02_seed_data.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ots_network
+
+  # ========================================
+  # Silnik gry - The Forgotten Server 1.4.2
+  # ========================================
+  gameserver:
+    build:
+      context: ./tfs
+      dockerfile: Dockerfile
+    container_name: ots_engine
+    restart: unless-stopped
+    ports:
+      - "7171:7171"
+      - "7172:7172"
+    volumes:
+      - ./tfs/config.lua:/srv/config.lua
+      - ./tfs/data:/srv/data
+      - ./tfs/schema.sql:/srv/schema.sql
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ots_network
+
+  # ========================================
+  # Strona WWW - Apache + PHP 8.2 + MyAAC
+  # ========================================
+  website:
+    build:
+      context: ./www
+      dockerfile: Dockerfile
+    container_name: myaac_site
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./www/config.local.php:/var/www/html/config.local.php
+      - ./tfs:/srv
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ots_network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  ots_network:
+    driver: bridge

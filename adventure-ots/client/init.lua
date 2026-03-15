@@ -118,3 +118,7 @@ if g_app.hasUpdater() then
 end
 
 loadModules()
+
+-- Adventure OTS: hardcode connection to local server
+-- Protocol 1098 = Tibia client version 10.98
+EnterGame.setUniqueServer("127.0.0.1", 7171, 1098)
