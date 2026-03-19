@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Import Google Fonts ──────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ── Base Styles ──────────────────────── */
+@layer base {
+  body {
+    @apply bg-abyss-950 text-stone-light font-inter;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-cinzel;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-abyss-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-stone-dark rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-stone;
+  }
+}
+
+/* ── Component Styles ─────────────────── */
+@layer components {
+  /* Fantasy Card */
+  .fantasy-card {
+    @apply relative bg-card-gradient rounded-lg border border-abyss-600/50 p-6 backdrop-blur-sm;
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(201, 168, 76, 0.05);
+  }
+
+  .fantasy-card:hover {
+    @apply border-gold/20;
+    box-shadow: 
+      0 4px 25px rgba(0, 0, 0, 0.5),
+      0 0 15px rgba(201, 168, 76, 0.08),
+      inset 0 1px 0 rgba(201, 168, 76, 0.1);
+  }
+
+  /* Fantasy Button */
+  .btn-fantasy {
+    @apply relative inline-flex items-center justify-center px-6 py-3 
+           font-cinzel font-semibold text-sm tracking-wider uppercase
+           bg-gradient-to-b from-blood to-blood-dark 
+           border border-blood-light/30 rounded
+           text-parchment
+           transition-all duration-300 ease-out
+           hover:from-blood-light hover:to-blood 
+           hover:shadow-glow-red hover:scale-[1.02]
+           active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+  }
+
+  .btn-fantasy-gold {
+    @apply btn-fantasy
+           bg-gradient-to-b from-gold-dark to-gold-dark/80
+           border-gold/30
+           hover:from-gold hover:to-gold-dark
+           hover:shadow-glow-gold;
+  }
+
+  /* Fantasy Input */
+  .input-fantasy {
+    @apply w-full px-4 py-3 
+           bg-abyss-900/80 border border-abyss-600/60 rounded
+           text-stone-light placeholder-stone-dark
+           font-inter text-sm
+           focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20
+           transition-all duration-200;
+  }
+
+  /* Fantasy Table */
+  .table-fantasy {
+    @apply w-full border-collapse;
+  }
+
+  .table-fantasy thead th {
+    @apply px-4 py-3 text-left font-cinzel text-gold text-xs uppercase tracking-widest
+           border-b border-gold/20 bg-abyss-800/50;
+  }
+
+  .table-fantasy tbody td {
+    @apply px-4 py-3 text-sm border-b border-abyss-600/30;
+  }
+
+  .table-fantasy tbody tr {
+    @apply transition-colors duration-150 hover:bg-abyss-700/30;
+  }
+
+  .table-fantasy tbody tr:nth-child(even) {
+    @apply bg-abyss-800/20;
+  }
+
+  /* Section Title */
+  .section-title {
+    @apply font-cinzel text-2xl md:text-3xl text-gold font-bold tracking-wide
+           relative inline-block pb-3;
+  }
+
+  .section-title::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-gold/60 via-gold/20 to-transparent;
+  }
+
+  /* Decorative divider */
+  .divider-fantasy {
+    @apply w-full h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent my-8;
+  }
+}
+
+/* ── Glow animation ───────────────────── */
+@keyframes floatGlow {
+  0%, 100% { opacity: 0.3; transform: translateY(0); }
+  50% { opacity: 0.6; transform: translateY(-5px); }
+}
+
+.animate-float-glow {
+  animation: floatGlow 6s ease-in-out infinite;
+}

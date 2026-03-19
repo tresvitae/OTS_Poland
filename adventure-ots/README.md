@@ -8,7 +8,9 @@ Kompletne środowisko deweloperskie do uruchomienia serwera Tibia OTS z użyciem
 |--------|----------|------|------|
 | **MariaDB 10.11** | `ots_db` | `3306` | Baza danych |
 | **TFS 1.4.2** | `ots_engine` | `7171`, `7172` | Silnik gry |
-| **Apache + PHP 8.2** | `myaac_site` | `80` | Strona WWW (MyAAC) |
+| **AAC Backend** | `aac_api` | `3001` (wewnętrzny) | API (Node.js + TypeScript) |
+| **AAC Frontend** | `aac_web` | `3000` (wewnętrzny) | Strona SPA (Next.js + Tailwind) |
+| **Nginx** | `aac_proxy` | `80` | Reverse Proxy |
 
 ## 📂 Struktura
 
@@ -23,11 +25,17 @@ adventure-ots/
 │   ├── config.lua.dist         # Oryginalna konfiguracja
 │   ├── schema.sql              # Schemat bazy TFS
 │   └── data/                   # Dane gry (mapy, NPC, spelle...)
-├── www/
-│   ├── Dockerfile              # PHP 8.2 + Apache + Composer
-│   ├── config.local.php        # Konfiguracja MyAAC (DB, ścieżki)
-│   ├── .htaccess               # Reguły Apache
-│   └── ...                     # Źródła MyAAC
+├── aac-backend/
+│   ├── Dockerfile              # Node.js 20 Alpine (multi-stage)
+│   ├── package.json            # Express, mysql2, JWT, Helmet
+│   └── src/                    # TypeScript API (routes, auth, db)
+├── aac-frontend/
+│   ├── Dockerfile              # Next.js 14 standalone (multi-stage)
+│   ├── package.json            # React 18, Tailwind CSS
+│   └── src/                    # App Router (pages, components)
+├── nginx/
+│   ├── Dockerfile              # Nginx Alpine
+│   └── nginx.conf              # Reverse proxy (/api → backend)
 └── client/
     ├── Dockerfile              # OTClient Mehah
     ├── init.lua                # Punkt startowy (setUniqueServer)
@@ -54,7 +62,8 @@ docker compose up -d --build
 
 | Usługa | URL / Adres |
 |--------|-------------|
-| **Strona WWW** | http://localhost |
+| **Strona WWW (AAC)** | http://localhost |
+| **API Backend** | http://localhost/api/health |
 | **Serwer gry** | `127.0.0.1:7171` (w kliencie) |
 | **Baza danych** | `localhost:3306` |
 
@@ -78,10 +87,10 @@ Edytuj `tfs/config.lua`:
 - `experienceStages` — etapy doświadczenia
 - `mapName` — nazwa mapy (bez `.otbm`)
 
-### Strona WWW
-Edytuj `www/config.local.php`:
-- `database_*` — połączenie z bazą
-- `server_path` — ścieżka do TFS w kontenerze
+### AAC Backend
+Zmienne środowiskowe (w `docker-compose.yml`):
+- `JWT_SECRET` — zmień na losowy ciąg znaków w produkcji
+- `DB_*` — dane połączenia z bazą
 
 ### Klient
 W `client/init.lua`:
@@ -96,12 +105,14 @@ EnterGame.setUniqueServer("127.0.0.1", 7171, 1098)
 docker compose logs -f
 
 # Logi konkretnego serwisu
+docker compose logs -f aac-backend
+docker compose logs -f aac-frontend
+docker compose logs -f nginx
 docker compose logs -f gameserver
-docker compose logs -f website
 docker compose logs -f db
 
 # Restart serwisu
-docker compose restart gameserver
+docker compose restart aac-backend
 
 # Połączenie z bazą
 docker compose exec db mysql -uroot -ptwoje_haslo ots_baza
@@ -117,6 +128,7 @@ docker compose up -d --build
 |---------|-------------|
 | TFS: "Connection refused" | DB się inicjalizuje — poczekaj 30s, potem `docker compose restart gameserver` |
 | TFS: "Map not found" | Sprawdź `mapName` w `config.lua` vs pliki w `tfs/data/world/` |
-| WWW: Biała strona | `docker compose logs website` — sprawdź błędy PHP |
+| AAC: Biała strona | `docker compose logs aac-frontend` — sprawdź błędy Next.js |
+| API: 500 error | `docker compose logs aac-backend` — sprawdź połączenie z DB |
 | Klient: "Things not loaded" | Umieść assety `.spr`/`.dat` w `client/data/things/1098/` |
 | DB: Brak tabel | `docker compose down -v && docker compose up -d --build` |

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ========================================
   # Baza danych - MariaDB 10.11 LTS
@@ -52,22 +50,58 @@ services:
       - ots_network
 
   # ========================================
-  # Strona WWW - Apache + PHP 8.2 + MyAAC
+  # AAC Backend - Node.js + TypeScript API
   # ========================================
-  website:
+  aac-backend:
     build:
-      context: ./www
+      context: ./aac-backend
       dockerfile: Dockerfile
-    container_name: myaac_site
+    container_name: aac_api
     restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./www/config.local.php:/var/www/html/config.local.php
-      - ./tfs:/srv
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASSWORD: twoje_haslo
+      DB_NAME: ots_baza
+      JWT_SECRET: adventure-ots-jwt-secret-change-me
+      PORT: "3001"
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - ots_network
+
+  # ========================================
+  # AAC Frontend - Next.js SPA
+  # ========================================
+  aac-frontend:
+    build:
+      context: ./aac-frontend
+      dockerfile: Dockerfile
+    container_name: aac_web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: /api
+    depends_on:
+      - aac-backend
+    networks:
+      - ots_network
+
+  # ========================================
+  # Nginx - Reverse Proxy
+  # ========================================
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: aac_proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - aac-backend
+      - aac-frontend
     networks:
       - ots_network
 
