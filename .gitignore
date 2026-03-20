@@ -2,3 +2,4 @@
 .env
 adventure-ots/tfs/data/things/*
 TODO
+adventure-ots/tfs/key.pem.pub
