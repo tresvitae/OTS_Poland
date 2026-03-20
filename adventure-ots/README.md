@@ -67,6 +67,8 @@ docker compose up -d --build
 | **Serwer gry** | `127.0.0.1:7171` (w kliencie) |
 | **Baza danych** | `localhost:3306` |
 
+> ✅ **Status WWW:** Strona (AAC) działa poprawnie pod adresem `http://localhost`. Tworzenie nowych użytkowników i zapis do bazy danych funkcjonuje prawidłowo. Funkcjonalności te są w pełni dostępne po ponownym uruchomieniu (restarcie) kontenerów.
+
 ### Domyślne konto
 - **Login:** `1`
 - **Hasło:** `1`

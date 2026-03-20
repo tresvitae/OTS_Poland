@@ -98,6 +98,14 @@ Jeśli coś nie działa, sprawdź logi konkretnego serwisu:
 
 ---
 
+## ✅ Aktualny Status Uruchomienia
+
+* **Strona WWW (AAC)** działa poprawnie pod adresem `http://localhost`.
+* **Rejestracja:** Tworzenie nowych użytkowników oraz zapis do bazy danych funkcjonuje prawidłowo.
+* **Uwaga:** Funkcjonalności są w pełni dostępne po ponownym uruchomieniu / restarcie kontenerów.
+
+---
+
 ## 📝 Lista zadań do wykonania (Roadmap)
 
 * [x] Wdrożenie systemu AAC (Backend + Frontend + Nginx)
