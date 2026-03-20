@@ -9,6 +9,7 @@ const NAV_LINKS = [
     { href: '/', label: 'Home', icon: '🏰' },
     { href: '/highscores', label: 'Highscores', icon: '🏆' },
     { href: '/online', label: 'Online', icon: '⚔️' },
+    { href: '/download', label: 'Download', icon: '📥' },
 ];
 
 export default function Navbar() {
