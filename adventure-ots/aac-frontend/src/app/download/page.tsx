@@ -1,5 +1,3 @@
-'use client';
-
 import Navbar from '@/components/Navbar';
 
 export default function DownloadPage() {
@@ -22,16 +20,18 @@ export default function DownloadPage() {
                     </p>
                     
                     <div className="pt-4 space-y-4">
-                        <a 
-                            href="#" 
+                        <a
+                            href="/downloads/windows/adventure-ots-client-windows.zip"
                             className="inline-block btn-fantasy text-lg px-8 py-4"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                alert('Link do pobrania klienta będzie wkrótce dostępny!');
-                            }}
+                            download
                         >
-                            Pobierz (Windows / Linux / Mac)
+                            Pobierz dla Windows (ZIP)
                         </a>
+
+                        <p className="text-stone-light text-sm max-w-xl mx-auto">
+                            Jeśli kliknięcie zwraca 404, dodaj paczkę klienta pod ścieżką:
+                            <span className="block text-gold mt-1">aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip</span>
+                        </p>
                         
                         <p className="text-stone-dark text-sm mt-2">
                             Rozmiar pliku: ~50 MB
