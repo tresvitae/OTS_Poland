@@ -1,0 +1,74 @@
+name: Lua Lint (luacheck)
+
+on:
+  push:
+    paths:
+      - "data/**/*.lua"
+      - ".luacheckrc"
+  pull_request:
+    paths:
+      - "data/**/*.lua"
+
+jobs:
+  luacheck:
+    name: Luacheck dla data/
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalacja luacheck przez luarocks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 luarocks
+          sudo luarocks install luacheck
+
+      # .luacheckrc w root projektu definiuje TFS globals
+      - name: Sprawdzenie .luacheckrc
+        run: |
+          if [ ! -f ".luacheckrc" ]; then
+            echo "BRAK .luacheckrc — generowanie domyślnego dla TFS"
+            cat > .luacheckrc << 'EOF'
+-- Globalne funkcje i obiekty TFS dostępne w Lua
+std = "lua54"
+max_line_length = 160
+ignore = {
+  "212", -- nieużywane argumenty (częste w handlerach TFS)
+  "411", -- redefiniowanie zmiennej lokalnej
+}
+
+-- Globale TFS — bez tego luacheck zgłasza undefined global
+globals = {
+  -- Klasy
+  "Player", "Monster", "Npc", "Creature", "Item", "Tile", "House",
+  "Position", "Outfit", "ItemType", "MonsterType",
+  -- Funkcje globalne TFS
+  "isPlayer", "isMonster", "isNpc", "isCreature", "isItem",
+  "doPlayerAddItem", "doSendMagicEffect", "doSendDistanceShoot",
+  "addEvent", "stopEvent",
+  "db", "result",
+  -- Revscriptsys registratory
+  "Action", "MoveEvent", "TalkAction", "GlobalEvent",
+  "Spell", "Weapon", "CreatureEvent", "Event",
+  -- Stałe TFS
+  "MAGIC_EFFECT_BLUE_BUBBLE", "CONST_ME_NONE",
+  "RETURNVALUE_NOERROR", "TALKTYPE_SAY",
+  "ITEM_ATTRIBUTE_DESCRIPTION", "GAME_STATE_NORMAL",
+  "SKULL_NONE", "BLESS_ADVENTURER",
+  -- Enumy vocations, directions, etc.
+  "VOCATION_NONE", "NORTH", "SOUTH", "EAST", "WEST",
+}
+EOF
+          fi
+
+      - name: Uruchomienie luacheck
+        run: |
+          luacheck data/ \
+            --config .luacheckrc \
+            --exclude-files "data/lib/compatibility*.lua" \
+            --formatter plain \
+            --codes
+
+      - name: Podsumowanie wyników
+        if: always()
+        run: luacheck data/ --config .luacheckrc --formatter TAP | tail -5

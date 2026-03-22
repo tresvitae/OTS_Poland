@@ -1,0 +1,103 @@
+name: TFS C++ Build & Test
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+      - "vcpkg.json"
+      - "cmake/**"
+  pull_request:
+    paths:
+      - "src/**"
+      - "CMakeLists.txt"
+
+env:
+  VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+  # Wymusza spójny cache hash między jobami
+  VCPKG_DEFAULT_TRIPLET: x64-linux
+
+jobs:
+  build:
+    name: Build TFS (Ubuntu)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout z submodułami
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # vcpkg cache — bez tego każdy build trwa ~20 minut
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.VCPKG_ROOT }}
+            !${{ env.VCPKG_ROOT }}/buildtrees
+            !${{ env.VCPKG_ROOT }}/packages
+            !${{ env.VCPKG_ROOT }}/downloads
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
+
+      - name: Instalacja vcpkg
+        run: |
+          if [ ! -f "${{ env.VCPKG_ROOT }}/vcpkg" ]; then
+            git clone https://github.com/microsoft/vcpkg ${{ env.VCPKG_ROOT }}
+            ${{ env.VCPKG_ROOT }}/bootstrap-vcpkg.sh -disableMetrics
+          fi
+
+      - name: Zależności systemowe (nie przez vcpkg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ninja-build \
+            libssl-dev \
+            libmariadb-dev \
+            default-libmysqlclient-dev
+
+      # CMake cache — przyspiesza rekonfigurację
+      - name: Cache CMake build dir
+        uses: actions/cache@v4
+        with:
+          path: build/
+          key: cmake-${{ runner.os }}-${{ hashFiles('src/**', 'CMakeLists.txt') }}
+          restore-keys: |
+            cmake-${{ runner.os }}-
+
+      - name: Konfiguracja CMake
+        run: |
+          cmake -S . -B build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake \
+            -DSKIP_GIT=ON \
+            -DBUILD_TESTING=OFF
+
+      - name: Kompilacja TFS
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Upload binarki jako artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfs-${{ github.sha }}
+          path: build/tfs
+          retention-days: 7
+
+  # Osobny job — nie blokuje builda jeśli linter crashuje
+  lint-cpp:
+    name: Static Analysis (cppcheck)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalacja cppcheck
+        run: sudo apt-get install -y cppcheck
+      - name: Analiza src/
+        run: |
+          cppcheck \
+            --enable=warning,performance,portability \
+            --std=c++20 \
+            --error-exitcode=1 \
+            --suppress=missingIncludeSystem \
+            src/
