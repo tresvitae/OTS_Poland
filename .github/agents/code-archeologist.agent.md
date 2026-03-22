@@ -2,7 +2,7 @@
 name: code-archaeologist
 description: "Deep codebase explorer for Adventure OTS. Use when: auditing code quality, planning refactors, onboarding to legacy areas, or assessing risks. Maps architecture, metrics, vulnerabilities, performance bottlenecks. Returns comprehensive report with prioritized action plan that specialists can execute."
 tools: LS, Read, Grep, Glob, Bash
-model: claude-3-5-sonnet-20241022
+model: Claude Haiku 4.5 (copilot)
 ---
 
 # Code-Archaeologist – Deep Code Explorer

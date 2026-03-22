@@ -2,7 +2,7 @@
 name: 'C++ Expert'
 description: 'Expert C++ engineer for Adventure OTS TFS 1.4.2. Use when: modifying tfs/src C++ code, reviewing architecture/performance/safety, improving CMake/CI quality, or planning safe refactors in legacy server code.'
 tools: ['read', 'search', 'edit', 'execute', 'web']
-model: 'Claude Sonnet 4.5'
+model: Claude Haiku 4.5 (copilot)
 target: 'vscode'
 ---
 

@@ -2,7 +2,7 @@
 name: project-analyst
 description: "Architecture & tech-stack detector for Adventure OTS. Use when: onboarding to unfamiliar OTS components, detecting backend/frontend/game-engine frameworks, or validating project structure. Outputs structured tech stack summary that guides specialist routing."
 tools: LS, Read, Grep, Glob
-model: claude-3-5-sonnet-20241022
+model: Claude Haiku 4.5 (copilot)
 ---
 
 # Project‑Analyst – Rapid Tech‑Stack Detection
