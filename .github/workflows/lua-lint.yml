@@ -1,67 +1,58 @@
-name: Lua Lint (luacheck)
+name: Lua Lint (TFS)
 
 on:
   push:
     paths:
-      - "data/**/*.lua"
-      - ".luacheckrc"
+      - "adventure-ots/tfs/data/**/*.lua"
+      - "adventure-ots/tfs/.luacheckrc"
+      - ".github/workflows/lua-lint.yml"
   pull_request:
     paths:
-      - "data/**/*.lua"
+      - "adventure-ots/tfs/data/**/*.lua"
+      - "adventure-ots/tfs/.luacheckrc"
+      - ".github/workflows/lua-lint.yml"
 
 jobs:
   luacheck:
-    name: Luacheck dla data/
+    name: Luacheck for TFS data/
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: adventure-ots/tfs
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Instalacja luacheck przez luarocks
+      - name: Install luacheck via luarocks
         run: |
           sudo apt-get update
-          sudo apt-get install -y lua5.4 luarocks
+          sudo apt-get install -y lua5.1 luarocks
           sudo luarocks install luacheck
 
-      # .luacheckrc w root projektu definiuje TFS globals
-      - name: Sprawdzenie .luacheckrc
+      - name: Ensure .luacheckrc exists
         run: |
           if [ ! -f ".luacheckrc" ]; then
-            echo "BRAK .luacheckrc — generowanie domyślnego dla TFS"
+            echo "Missing .luacheckrc - generating default config for TFS 1.4.2"
             cat > .luacheckrc << 'EOF'
--- Globalne funkcje i obiekty TFS dostępne w Lua
-std = "lua54"
+std = "lua51"
 max_line_length = 160
 ignore = {
-  "212", -- nieużywane argumenty (częste w handlerach TFS)
-  "411", -- redefiniowanie zmiennej lokalnej
+  "212", -- unused args (common in handlers)
+  "411", -- local variable redefined
 }
 
--- Globale TFS — bez tego luacheck zgłasza undefined global
 globals = {
-  -- Klasy
   "Player", "Monster", "Npc", "Creature", "Item", "Tile", "House",
   "Position", "Outfit", "ItemType", "MonsterType",
-  -- Funkcje globalne TFS
-  "isPlayer", "isMonster", "isNpc", "isCreature", "isItem",
-  "doPlayerAddItem", "doSendMagicEffect", "doSendDistanceShoot",
-  "addEvent", "stopEvent",
-  "db", "result",
-  -- Revscriptsys registratory
-  "Action", "MoveEvent", "TalkAction", "GlobalEvent",
-  "Spell", "Weapon", "CreatureEvent", "Event",
-  -- Stałe TFS
-  "MAGIC_EFFECT_BLUE_BUBBLE", "CONST_ME_NONE",
-  "RETURNVALUE_NOERROR", "TALKTYPE_SAY",
-  "ITEM_ATTRIBUTE_DESCRIPTION", "GAME_STATE_NORMAL",
-  "SKULL_NONE", "BLESS_ADVENTURER",
-  -- Enumy vocations, directions, etc.
-  "VOCATION_NONE", "NORTH", "SOUTH", "EAST", "WEST",
+  "Action", "MoveEvent", "TalkAction", "GlobalEvent", "Spell", "Weapon", "CreatureEvent", "Event",
+  "Game", "db", "result", "addEvent", "stopEvent",
+  "CONST_ME_NONE", "RETURNVALUE_NOERROR", "TALKTYPE_SAY",
+  "NORTH", "SOUTH", "EAST", "WEST", "VOCATION_NONE"
 }
 EOF
           fi
 
-      - name: Uruchomienie luacheck
+      - name: Run luacheck
         run: |
           luacheck data/ \
             --config .luacheckrc \
@@ -69,6 +60,6 @@ EOF
             --formatter plain \
             --codes
 
-      - name: Podsumowanie wyników
+      - name: Summary
         if: always()
         run: luacheck data/ --config .luacheckrc --formatter TAP | tail -5

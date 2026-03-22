@@ -1,20 +1,24 @@
 ---
-applyTo: "data/**/*.lua"
+name: TFS Lua Scripts
+description: "TFS 1.4.2 Lua scripting guidance for Adventure OTS. Use for gameplay scripts under tfs/data."
+applyTo: "adventure-ots/tfs/data/**/*.lua"
 ---
 
-# TFS 1.5 Lua Scripting — Zasady Copilota
+# TFS 1.4.2 Lua Scripting Standards
 
-## Nil Safety — ZAWSZE
+Use these standards for all Lua files in `adventure-ots/tfs/data/`.
 
-Każde odwołanie do creature/player/item MUSI być poprzedzone nil-checkiem:
+## 1. Nil Safety (Always)
+
+Every `Player`/`Creature`/`Item` reference must be guarded:
 
 ```lua
--- ŹLE
+-- BAD
 local function onCastSpell(creature, var)
-    creature:getPosition()  -- crash jeśli creature nil lub offline
+    creature:getPosition() -- may crash if creature is nil
 end
 
--- DOBRZE
+-- GOOD
 local function onCastSpell(creature, var)
     if not creature or not creature:isCreature() then
         return false
@@ -23,45 +27,32 @@ local function onCastSpell(creature, var)
 end
 ```
 
-## Revscriptsys — rejestracja skryptów
+## 2. Revscriptsys Registration
 
-Pliki w `data/scripts/` ładują się automatycznie. Każdy plik MUSI kończyć się rejestracją:
+Scripts in `data/scripts/` are autoloaded, but each script object must be registered:
 
 ```lua
--- Spell
 local exampleSpell = Spell("exampleSpell")
--- ... konfiguracja ...
+-- ... config ...
 exampleSpell:register()
-
--- Action
-local exampleAction = Action()
--- ... konfiguracja ...
-exampleAction:register()
-
--- TalkAction
-local exampleTalk = TalkAction("/example")
--- ... konfiguracja ...
-exampleTalk:register()
 ```
 
-## Deprecated API — nigdy nie używaj
+## 3. Avoid Deprecated API
 
-| Stare (deprecated) | Nowe (TFS 1.4+) |
+| Deprecated | Preferred (TFS 1.4+) |
 |---|---|
 | `doPlayerAddItem(cid, id)` | `player:addItem(id)` |
 | `getCreatureName(cid)` | `creature:getName()` |
 | `getPlayerLevel(cid)` | `player:getLevel()` |
 | `doSendMagicEffect(pos, e)` | `pos:sendMagicEffect(e)` |
 | `getTileItemById(pos, id)` | `Tile(pos):getItemById(id)` |
-| Numery creature ID (`cid`) | Bezpośrednie obiekty Lua |
+| Creature IDs (`cid`) | Direct Lua objects |
 
-## Database — tylko przez db.query z escape
+## 4. Database Safety
+
+Always escape user/player input and free query resources:
 
 ```lua
--- ŹLE — podatne na SQL injection
-db.query("SELECT * FROM players WHERE name = '" .. playerName .. "'")
-
--- DOBRZE
 local query = string.format(
     "SELECT `id`, `level` FROM `players` WHERE `name` = %s",
     db.escapeString(playerName)
@@ -73,56 +64,51 @@ if resultId ~= false then
 end
 ```
 
-## Loot tables — zasady prawdopodobieństwa
+## 5. Loot Chance Rules
 
-- Skala: `0` = nigdy, `100000` = zawsze (100%)
+- Scale: `0` = never, `100000` = always (100%)
 - `1000` = 1%, `500` = 0.5%, `100` = 0.1%
-- Suma szans w tabeli może przekraczać 100000 — TFS rzuca niezależnie dla każdej pozycji
-- Item z `chance = 100000` to **guaranteed drop** — dodawaj świadomie
+- Rolls are independent; sum may exceed `100000`
+- `chance = 100000` is guaranteed drop
 
-## Eventy globalne — cleanup po sobie
+## 6. Global Event Hygiene
+
+Global events must return `true` and clean temporary state:
 
 ```lua
-local GlobalEventExample = GlobalEvent("ExampleTimer")
+local ExampleEvent = GlobalEvent("ExampleEvent")
 
-function GlobalEventExample.onThink(interval)
-    -- cleanup tymczasowych danych
+function ExampleEvent.onThink(interval)
     for guid, data in pairs(tempStorage) do
         if os.time() > data.expires then
             tempStorage[guid] = nil
         end
     end
-    return true  -- MUSI zwrócić true, inaczej event się wyłącza
+    return true
 end
 
-GlobalEventExample:interval(60000)  -- co 60 sekund
-GlobalEventExample:register()
+ExampleEvent:interval(60000)
+ExampleEvent:register()
 ```
 
-## Storage keys — unikaj konfliktów
+## 7. Storage Key Ranges
 
-Używaj zarezerwowanych zakresów dla własnych featurów:
-```lua
--- Definiuj w data/lib/constants.lua
-STORAGE_QUEST_MAIN      = 30000  -- questy: 30000-30999
-STORAGE_SYSTEM_PREMIUM  = 40000  -- system features: 40000-40999
-STORAGE_CUSTOM_FEATURE  = 50000  -- własne dodatki: 50000+
-```
-
-## Wydajność — unikaj w hot-path
+Use reserved ranges to avoid collisions:
 
 ```lua
--- ŹLE w onThink() wywoływanym co 2s dla każdego monstera
-local allPlayers = Game.getPlayers()  -- kosztowne
-
--- DOBRZE — cache na poziomie globalnym, refresh co N sekund
-local cachedPlayerCount = 0
-local lastCacheTime = 0
-local function getPlayerCount()
-    if os.time() - lastCacheTime > 30 then
-        cachedPlayerCount = #Game.getPlayers()
-        lastCacheTime = os.time()
-    end
-    return cachedPlayerCount
-end
+STORAGE_QUEST_MAIN = 30000      -- 30000-30999
+STORAGE_SYSTEM_PREMIUM = 40000  -- 40000-40999
+STORAGE_CUSTOM_FEATURE = 50000  -- 50000+
 ```
+
+## 8. Performance in Hot Paths
+
+Avoid expensive calls in frequent events (`onThink`, combat loops). Cache where possible.
+
+## 9. Quick Checklist
+
+- Lua 5.1-compatible syntax only
+- Nil-check all object access
+- Prefer modern object API
+- Keep DB calls escaped and resource-safe
+- Keep hot-path logic lightweight
