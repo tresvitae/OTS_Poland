@@ -1,7 +1,7 @@
 ---
 name: bootstrap-orchestrator
 description: Intelligent bootstrapping orchestrator for MMORPG projects. Detects project scenarios (new server, existing TFS fork, partial setup), analyzes C++/Lua/MySQL codebase, and sets up optimal Copilot agent configuration. Use when entering any Tibia OTS project for the first time or setting up a new game server environment.
-model: gpt-5.1
+model: GPT-5.1 (copilot)
 tools:
   - codebase
   - terminal
