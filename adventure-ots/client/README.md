@@ -1,13 +1,16 @@
 
 <h1>
   <img src="https://github.com/mehah/otclient/blob/main/data/images/clienticon.png?raw=true" width="32" alt="logo"/>
-  OTClient - Redemption
-</h1>
+  # OTClient V8 - Adventure OTS Edition (x86 Windows Only)
 
-[![Discord Shield](https://discordapp.com/api/guilds/888062548082061433/widget.png?style=shield)](https://discord.gg/tUjTBZzMCy)
-[![Build - Ubuntu](https://github.com/mehah/otclient/actions/workflows/build-ubuntu.yml/badge.svg)](https://github.com/mehah/otclient/actions/workflows/build-ubuntu.yml)
-[![Build - Windows](https://github.com/mehah/otclient/actions/workflows/build-windows.yml/badge.svg)](https://github.com/mehah/otclient/actions/workflows/build-windows.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  **Optimized for Protocol 10.98 / TFS 1.4.2**
+
+  | Feature | Status | Details |
+  | --- | --- | --- |
+  | **Architecture** | ✅ x86 (32-bit) | Windows only, OpenGL/GLEW |
+  | **Protocol** | ✅ 10.98 | TFS 1.4.2 compatible |
+  | **Build** | ✅ Complete | Ninja + CMake + vcpkg |
+  | **Package** | ✅ ZIP Ready | 73 MB (exe + data) |
 
 ---
 
