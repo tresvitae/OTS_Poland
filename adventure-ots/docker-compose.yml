@@ -40,7 +40,6 @@ services:
       - "7172:7172"
     volumes:
       - ./tfs/config.lua:/srv/config.lua
-      - ./tfs/key.pem:/srv/key.pem
       - ./tfs/data:/srv/data
       - ./tfs/schema.sql:/srv/schema.sql
     depends_on:

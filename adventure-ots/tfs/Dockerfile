@@ -47,13 +47,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libgmp10 \
   libluajit-5.1-2 \
   libmariadb3 \
+  openssl \
   libpugixml1v5 \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /usr/src/forgottenserver/build/tfs /bin/tfs
 COPY data /srv/data/
 COPY *.dist *.sql /srv/
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 7171 7172
 WORKDIR /srv
-ENTRYPOINT ["/bin/tfs"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

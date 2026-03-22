@@ -89,6 +89,8 @@ Edytuj `tfs/config.lua`:
 - `experienceStages` — etapy doświadczenia
 - `mapName` — nazwa mapy (bez `.otbm`)
 
+RSA key (`key.pem`) jest teraz tworzony automatycznie przy starcie kontenera `gameserver`, jeśli plik nie istnieje lub jest uszkodzony.
+
 ### AAC Backend
 Zmienne środowiskowe (w `docker-compose.yml`):
 - `JWT_SECRET` — zmień na losowy ciąg znaków w produkcji
@@ -130,6 +132,7 @@ docker compose up -d --build
 |---------|-------------|
 | TFS: "Connection refused" | DB się inicjalizuje — poczekaj 30s, potem `docker compose restart gameserver` |
 | TFS: "Map not found" | Sprawdź `mapName` w `config.lua` vs pliki w `tfs/data/world/` |
+| TFS: "Missing RSA private key PEM header" | Usuń stare kontenery (`docker compose down`) i uruchom ponownie build (`docker compose up -d --build`) — kontener wygeneruje poprawny `key.pem` automatycznie |
 | AAC: Biała strona | `docker compose logs aac-frontend` — sprawdź błędy Next.js |
 | API: 500 error | `docker compose logs aac-backend` — sprawdź połączenie z DB |
 | Klient: "Things not loaded" | Umieść assety `.spr`/`.dat` w `client/data/things/1098/` |
