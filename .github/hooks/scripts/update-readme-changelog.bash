@@ -1,102 +1,122 @@
-#!/bin/bash
-# 
-# Copilot hook: po każdym toolUse (np. git commit / push)
-# automatycznie aktualizuje:
-# - README.md (ostatnie zmiany)
-# - CHANGELOG.md (nowa sekcja z ostatnim komitem)
+#!/usr/bin/env bash
+# Copilot hook: update root README.md and CHANGELOG.md with the last commit summary.
+#
+# Project standards:
+# - Works from any subdirectory inside the git repo
+# - Idempotent (no duplicate entries)
+# - Uses English section titles by default
+# - Avoids self-trigger loops by skipping hook-generated docs commits
 
 set -euo pipefail
 
-# Odczytaj JSON wejścia (opcjonalne, jeśli potrzebujesz debugu)
-# INPUT=$(cat)
-# TOOL_NAME=$(echo "$INPUT" | jq -r '.toolName // ""')
-
-# 1. Zakończ szybko jeśli nie jesteśmy w repo z git
-if ! git rev-parse --git-dir &>/dev/null; then
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
   exit 0
 fi
 
-# 2. Znajdź ostatni komit (format: "2025‑03‑22 - commit message" GMT)
-last_commit=$(git log --format="%cd - %s" --date=short -n 1 | head -n 1) || exit 0
-last_commit_short=$(echo "$last_commit" | cut -d ' ' -f 4- | head -c 80)
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
 
-# 3. Aktualizuj README.md (ostatnie zmiany)
-# Szukaj sekcji: "### Ostatnie zmiany" i dodaj na górę listy
-UPDATE_README=false
+readme_file="README.md"
+changelog_file="CHANGELOG.md"
+today="$(date +%Y-%m-%d)"
+last_subject="$(git log -n 1 --pretty=%s 2>/dev/null || true)"
 
-if grep -q "^### Ostatnie zmiany" README.md; then
-  # Sprawdź, czy ten sam komit jest już wpisany
-  if grep -qF "$last_commit_short" README.md; then
-    echo "ⓘ README.md: ta zmiana jest już wypisana, pomijam"
-  else
-    echo "🔄 README.md: dodaję nową zmianę do sekcji 'Ostatnie zmiany'"
-    UPDATE_README=true
-  fi
-else
-  echo "🔍 README.md: brak sekcji 'Ostatnie zmiany', dodaję sekcję"
-  printf '\n### Ostatnie zmiany\n\n- %s\n' "$last_commit_short" >> README.md
-  UPDATE_README=true
+if [[ -z "$last_subject" ]]; then
+  exit 0
 fi
 
-if [ "$UPDATE_README" = true ]; then
-  # Zastąp/Nadal sekcję (zabezpieczenie przed duplikatami w przyszłości)
-  tmp=$(mktemp)
-  sed '/^### Ostatnie zmiany$/q' README.md > "$tmp"
-  echo "### Ostatnie zmiany" >> "$tmp"
-  echo "" >> "$tmp"
-  echo "- $last_commit_short" >> "$tmp"
-  tail -n +$(($(grep -n "^### Ostatnie zmiany" README.md | cut -d ':' -f 1) + 1)) README.md | \
-    grep -v "$last_commit_short" | head -n 100 >> "$tmp"
-  cp "$tmp" README.md
-  rm "$tmp"
+# Skip self-generated docs commit to avoid loops.
+if [[ "$last_subject" =~ ^docs:\ update\ README/CHANGELOG ]]; then
+  exit 0
 fi
 
-# 4. Aktualizuj CHANGELOG.md (sekcja z datą)
-# Format: -
-#   - 2025‑03‑22 - msg
-#   - 2025‑03‑22 - msg
-UPDATE_CHANGELOG=false
+entry="${today} - ${last_subject}"
+entry="${entry:0:140}"
 
-if grep -q "^### 20" CHANGELOG.md; then
-  # Znajdź najnowszą sekcję zaczynającą się od "### 20"
-  last_changelog_date_line=$(grep -n "^### 20" CHANGELOG.md | tail -n 1 | cut -d ':' -f 1)
-  last_changelog_line=$(wc -l < CHANGELOG.md)
-  if [ "$last_changelog_date_line" -eq "$last_changelog_line" ]; then
-    # Najnowsza sekcja ma na końcu "### 2025‑03‑22"
-    echo "ⓘ CHANGELOG.md: sekcja z dzisiejszą datą jest pusta, dopisuję"
-    echo "- $last_commit_short" >> CHANGELOG.md
-    UPDATE_CHANGELOG=true
-  else
-    # Dodaj wpis tylko jeśli nie ma go już w tej sekcji
-    if grep -A 50 "^###.*$(date +%Y-%m-%d)" CHANGELOG.md | grep -qF "$last_commit_short"; then
-      echo "ⓘ CHANGELOG.md: ta zmiana jest już w CHANGELOG"
+ensure_file() {
+  local file="$1"
+  if [[ ! -f "$file" ]]; then
+    if [[ "$file" == "$changelog_file" ]]; then
+      printf "# Changelog\n" > "$file"
     else
-      echo "🔄 CHANGELOG.md: dodaję wpis do najnowszej sekcji z dzisiejszą datą"
-      sed -i.bak "s|^###.*$(date +%Y-%m-%d)|### $(date +%Y-%m-%d)\n- $last_commit_short|" CHANGELOG.md
-      UPDATE_CHANGELOG=true
+      printf "# Project\n" > "$file"
     fi
   fi
-else
-  echo "🔧 CHANGELOG.md: dodaję sekcję z dzisiejszą datą"
-  echo "### $(date +%Y-%m-%d)" >> CHANGELOG.md
-  echo "- $last_commit_short" >> CHANGELOG.md
-  UPDATE_CHANGELOG=true
+}
+
+ensure_section() {
+  local file="$1"
+  local section="$2"
+  if ! grep -qF "$section" "$file"; then
+    printf "\n%s\n\n" "$section" >> "$file"
+  fi
+}
+
+insert_under_section_once() {
+  local file="$1"
+  local section="$2"
+  local line="$3"
+
+  if grep -qF "$line" "$file"; then
+    return 1
+  fi
+
+  local tmp
+  tmp="$(mktemp)"
+  awk -v section="$section" -v line="$line" '
+    {
+      print $0
+      if ($0 == section && !inserted) {
+        print ""
+        print line
+        inserted = 1
+      }
+    }
+    END {
+      if (!inserted) {
+        print ""
+        print section
+        print ""
+        print line
+      }
+    }
+  ' "$file" > "$tmp"
+  mv "$tmp" "$file"
+  return 0
+}
+
+ensure_file "$readme_file"
+ensure_file "$changelog_file"
+
+readme_section="### Recent changes"
+legacy_readme_section="### Ostatnie zmiany"
+
+if grep -qF "$legacy_readme_section" "$readme_file"; then
+  readme_section="$legacy_readme_section"
 fi
 
-# 5. Jeśli coś zmieniło się w README.md / CHANGELOG.md, zacommituj osobno
-# (bez kolejnego wywołania hooka przez --no-verify)
-if [ "$UPDATE_README" = true ] || [ "$UPDATE_CHANGELOG" = true ]; then
-  echo "🌀 Dodaję zmiany README/CHANGELOG z a komitem (bez weryfikacji)"
+ensure_section "$readme_file" "$readme_section"
+ensure_section "$changelog_file" "### $today"
 
-  # Zabezpieczenie przed pętlą w hookach
-  if git diff --exit-code README.md CHANGELOG.md > /dev/null; then
-    echo "ⓘ README/CHANGELOG nie zmieniły się naprawdę"
-  else
-    git add README.md CHANGELOG.md
-    git commit --no-verify -m "docs: aktualizacja README/CHANGELOG po ostatnim change"
+updated=false
+
+if insert_under_section_once "$readme_file" "$readme_section" "- $entry"; then
+  echo "Updated README section: $readme_section"
+  updated=true
+fi
+
+if insert_under_section_once "$changelog_file" "### $today" "- $entry"; then
+  echo "Updated CHANGELOG section: ### $today"
+  updated=true
+fi
+
+if [[ "$updated" == true ]]; then
+  if ! git diff --quiet -- "$readme_file" "$changelog_file"; then
+    git add "$readme_file" "$changelog_file"
+    git commit --no-verify -m "docs: update README/CHANGELOG after latest commit"
   fi
 else
-  echo "ⓘ README.md i CHANGELOG.md nie wymagają aktualizacji"
+  echo "No README/CHANGELOG update needed."
 fi
 
 exit 0
