@@ -7,6 +7,12 @@
         "bash": "./.github/hooks/scripts/update-readme-changelog.bash",
         "cwd": ".",
         "timeoutSec": 30
+      },
+      {
+        "type": "command",
+        "bash": "./.github/hooks/scripts/update-tibia-client-readme-changelog.bash",
+        "cwd": ".",
+        "timeoutSec": 30
       }
     ]
   }
