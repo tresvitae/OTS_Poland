@@ -4,3 +4,4 @@ adventure-ots/tfs/data/things/*
 TODO
 adventure-ots/tfs/key.pem.pub
 .venv
+adventure-ots/aac-frontend/public/downloads/*.zip

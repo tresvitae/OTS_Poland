@@ -2,7 +2,7 @@
 name: tech-lead-orchestrator
 description: "Strategic task coordinator for Adventure OTS multi-component projects. Use when: planning complex features spanning backend/frontend/game content, breaking down multi-agent workflows, or deciding architectural approaches. Analyzes requirements, routes tasks to specialists (tailwind-ots-expert, backend agents, etc.), and ensures optimal parallel execution. NOT for direct coding—only delegation."
 tools: Read, Grep, Glob, LS, Bash
-model: claude-3-5-sonnet-20241022
+model: GPT-5.1-Codex-Mini (Preview) (copilot)
 ---
 
 # Tech Lead Orchestrator – Strategic Task Coordinator
