@@ -113,7 +113,9 @@ local function onUpdateNeeded(protocol, signature)
 end
 
 local function updateLabelText()
-    if enterGame:getChildById('clientComboBox') and tonumber(enterGame:getChildById('clientComboBox'):getText()) > 1080 then
+    -- Account login switches to email semantics only on newer protocols.
+    -- Adventure OTS runs fixed 10.98 and expects account name.
+    if enterGame:getChildById('clientComboBox') and tonumber(enterGame:getChildById('clientComboBox'):getText()) >= 1281 then
         enterGame:setText("Journey Onwards")
         enterGame:getChildById('emailLabel'):setText("Email:")
         enterGame:getChildById('rememberEmailBox'):setText("Remember Email:")
