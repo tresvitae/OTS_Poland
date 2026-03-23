@@ -17,15 +17,30 @@
 ## <a id="table-of-contents"></a>📋 Table of Contents
 1. ![Logo](https://raw.githubusercontent.com/mehah/otclient/main/src/otcicon.ico)  [What is OTClient?](#what-is-otclient)
 2. 🚀 [Features](#features)
-3. <img height="16" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/android/android.png"/> [The Mobile Project](#the-mobile-project)
-4. 🔨 [Compiling](#compiling)
-5. 🐳 [Docker](#docker)
-6. 🩺 [Need Help?](#need-help)
-7. 📑 [Bugs](#bugs)
-8. ❤️ [Roadmap](#roadmap)
-9. 💯 [Support Protocol](#support-protocol)
-10. ©️ [License](#license)
-11. ❤️ [Contributors](#contributors)
+3. ⚙️ [Adventure OTS Build Flow](#adventure-ots-build-flow)
+4. <img height="16" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/android/android.png"/> [The Mobile Project](#the-mobile-project)
+5. 🔨 [Compiling](#compiling)
+6. 🐳 [Docker](#docker)
+7. 🩺 [Need Help?](#need-help)
+8. 📑 [Bugs](#bugs)
+9. ❤️ [Roadmap](#roadmap)
+10. 💯 [Support Protocol](#support-protocol)
+11. ©️ [License](#license)
+12. ❤️ [Contributors](#contributors)
+
+---
+
+## <a id="adventure-ots-build-flow"></a>⚙️ Adventure OTS Build Flow
+
+These steps describe how we build and package the customized Adventure OTS Windows client while keeping the repository clean:
+
+1. **Install prerequisites** — Visual Studio 2022 Build Tools (C++ workload + Windows 10 SDK), CMake, Ninja, PowerShell 7, and a local vcpkg checkout. Update the hard-coded paths near the top of [scripts/build-otclient-x86.ps1](../scripts/build-otclient-x86.ps1) (`$env:VCPKG_ROOT`, `$vcVarsPath`, `$clientDir`, `$downloadsDir`) if your environment differs.
+2. **Run the build script** — From the repo root execute `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build-otclient-x86.ps1`. The script configures CMake with Ninja, builds an x86 static `otclient.exe`, stages runtime data under `build/windows-x86-release/package-runtime`, and emits `aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip`.
+3. **Repackage without rebuilding** — When only Lua/data changes occur, reuse the compiled binary by calling `pwsh -File adventure-ots/client/tools/package-windows.ps1 -ExecutablePath <path-to-otclient.exe>`. The script stages files under `adventure-ots/client/dist/windows` (a disposable directory you can safely ignore in git) before refreshing the downloadable zip.
+4. **Distribute** — The AAC frontend serves the latest bundle from `/downloads/windows/adventure-ots-client-windows.zip`. Uploading that file is enough for players; no extra installer is required.
+
+> [!TIP]
+> `adventure-ots/client/dist/` is regenerated every packaging run. Add it to `.gitignore` (repo root or client-level) to prevent accidental commits while keeping the published zip under source control via `aac-frontend/public/downloads/windows/`.
 
 ---
 

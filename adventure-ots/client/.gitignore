@@ -182,3 +182,6 @@ src/framework/core/cmake_pch.*
 ###############
 # config.otml.user    # User-specific runtime config
 # modules/otclientrc_user.lua  # User-specific client config
+
+# client/dist/windows is just a staging folder that tools/package-windows.ps1 recreates every packaging run before it zips the runtime payload (package-windows.ps1:11-48). 
+dist/*
