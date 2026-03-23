@@ -118,3 +118,8 @@ Jeśli coś nie działa, sprawdź logi konkretnego serwisu:
 - 2026-03-23 - Improve hooks; Add logs for debugging.; Corrected login field semantics.; add debug networking ots prompt; Improve agent; Add loging level of info.; +10 more
 
 
+
+### Client changes
+
+- [Client] 2026-03-23 - Add logs for debugging.; Corrected login field semantics.; changed default option and configuration setup to server.; Improve debugging logs level for client.; Improve Agent and client to run (resolved).; Fix problem with scirps no logs; +3 more
+
