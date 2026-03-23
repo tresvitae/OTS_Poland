@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copilot hook: update docs only when the latest commit includes Tibia client files.
+# Copilot hook: update docs only when the latest relevant commit includes Tibia client files.
 #
 # Client area for this repo:
 # - adventure-ots/client/**
@@ -16,19 +16,22 @@ cd "$repo_root"
 readme_file="README.md"
 changelog_file="CHANGELOG.md"
 today="$(date +%Y-%m-%d)"
-last_subject="$(git log -n 1 --pretty=%s 2>/dev/null || true)"
+
+# Resolve latest non-docs commit so this script still works even if another hook
+# already created a docs commit on HEAD.
+target_commit="$(git rev-list -n 1 --invert-grep --grep='^docs: update README/CHANGELOG' HEAD 2>/dev/null || true)"
+if [[ -z "$target_commit" ]]; then
+  exit 0
+fi
+
+last_subject="$(git log -n 1 --pretty=%s "$target_commit" 2>/dev/null || true)"
 
 if [[ -z "$last_subject" ]]; then
   exit 0
 fi
 
-# Skip self-generated docs commit to avoid loops.
-if [[ "$last_subject" =~ ^docs:\ update\ README/CHANGELOG\ for\ Tibia\ client ]]; then
-  exit 0
-fi
-
-# Detect whether HEAD commit touched Adventure OTS client files.
-changed_paths="$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null || true)"
+# Detect whether the target commit touched Adventure OTS client files.
+changed_paths="$(git diff-tree --no-commit-id --name-only -r "$target_commit" 2>/dev/null || true)"
 is_client_change=false
 
 while IFS= read -r path; do
@@ -40,7 +43,7 @@ while IFS= read -r path; do
 done <<< "$changed_paths"
 
 if [[ "$is_client_change" != true ]]; then
-  echo "No Tibia client changes in latest commit - skipping docs update."
+  echo "No Tibia client changes in latest relevant commit - skipping docs update."
   exit 0
 fi
 
@@ -125,6 +128,14 @@ fi
 
 if [[ "$updated" == true ]]; then
   if ! git diff --quiet -- "$readme_file" "$changelog_file"; then
+    git_user_name="$(git config --get user.name 2>/dev/null || true)"
+    git_user_email="$(git config --get user.email 2>/dev/null || true)"
+    if [[ -z "$git_user_name" || -z "$git_user_email" ]]; then
+      echo "Skipping docs commit: git user.name/user.email are not configured."
+      echo "Set them with: git config --global user.name 'Your Name' && git config --global user.email 'you@example.com'"
+      exit 0
+    fi
+
     git add "$readme_file" "$changelog_file"
     git commit --no-verify -m "docs: update README/CHANGELOG for Tibia client"
   fi

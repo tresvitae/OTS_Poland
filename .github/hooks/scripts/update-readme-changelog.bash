@@ -112,6 +112,14 @@ fi
 
 if [[ "$updated" == true ]]; then
   if ! git diff --quiet -- "$readme_file" "$changelog_file"; then
+    git_user_name="$(git config --get user.name 2>/dev/null || true)"
+    git_user_email="$(git config --get user.email 2>/dev/null || true)"
+    if [[ -z "$git_user_name" || -z "$git_user_email" ]]; then
+      echo "Skipping docs commit: git user.name/user.email are not configured."
+      echo "Set them with: git config --global user.name 'Your Name' && git config --global user.email 'you@example.com'"
+      exit 0
+    fi
+
     git add "$readme_file" "$changelog_file"
     git commit --no-verify -m "docs: update README/CHANGELOG after latest commit"
   fi
