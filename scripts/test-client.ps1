@@ -19,6 +19,29 @@ function Get-DefaultZipPath {
 	return Join-Path $repoRoot 'adventure-ots/aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip'
 }
 
+function Show-OtclientLog {
+	param(
+		[string]$RootPath
+	)
+
+	if ([string]::IsNullOrWhiteSpace($RootPath)) {
+		return ''
+	}
+
+	$logPath = Join-Path $RootPath 'otclient.log'
+	if (-not (Test-Path -LiteralPath $logPath)) {
+		return ''
+	}
+
+	$logContent = Get-Content -LiteralPath $logPath -Raw
+	if ($logContent) {
+		Write-Host "---- otclient.log ----" -ForegroundColor Cyan
+		Write-Host $logContent
+	}
+
+	return $logContent
+}
+
 if ([string]::IsNullOrWhiteSpace($ZipPath)) {
 	$ZipPath = Get-DefaultZipPath
 }
@@ -54,8 +77,6 @@ $processInfo = New-Object System.Diagnostics.ProcessStartInfo
 $processInfo.FileName = $exePath
 $processInfo.WorkingDirectory = (Split-Path -Parent $exePath)
 $processInfo.UseShellExecute = $false
-$processInfo.RedirectStandardOutput = $true
-$processInfo.RedirectStandardError = $true
 
 $argumentList = @()
 if ($ClientArgs) {
@@ -72,29 +93,6 @@ if ($argumentList.Count -gt 0) {
 
 $process = New-Object System.Diagnostics.Process
 $process.StartInfo = $processInfo
-$process.EnableRaisingEvents = $true
-
-$stdOutLines = New-Object System.Collections.Generic.List[string]
-$stdErrLines = New-Object System.Collections.Generic.List[string]
-
-$stdoutHandler = [System.Diagnostics.DataReceivedEventHandler]{
-	param($sender, $args)
-	if ($args.Data) {
-		$stdOutLines.Add($args.Data)
-		Write-Host "[STDOUT] $($args.Data)"
-	}
-}
-
-$stderrHandler = [System.Diagnostics.DataReceivedEventHandler]{
-	param($sender, $args)
-	if ($args.Data) {
-		$stdErrLines.Add($args.Data)
-		Write-Warning "[STDERR] $($args.Data)"
-	}
-}
-
-$process.add_OutputDataReceived($stdoutHandler)
-$process.add_ErrorDataReceived($stderrHandler)
 
 $cleanupTemp = {
 	param($pathToRemove)
@@ -107,55 +105,39 @@ $cleanupTemp = {
 }
 
 $process.Start() | Out-Null
-$process.BeginOutputReadLine()
-$process.BeginErrorReadLine()
 
 $hasExited = $process.WaitForExit($TimeoutSeconds * 1000)
 if (-not $hasExited) {
 	$process.Kill()
 	$process.WaitForExit()
-	$stdErr = [string]::Join([System.Environment]::NewLine, $stdErrLines.ToArray())
+	$logDump = Show-OtclientLog -RootPath $tempRoot
 	if (-not $KeepExtracted) {
 		& $cleanupTemp $tempRoot
 	}
-	$process.remove_OutputDataReceived($stdoutHandler)
-	$process.remove_ErrorDataReceived($stderrHandler)
 	$process.Dispose()
 	if ($FailOnTimeout) {
-		throw "otclient.exe timed out after $TimeoutSeconds seconds. STDERR: $stdErr"
+		throw "otclient.exe timed out after $TimeoutSeconds seconds." + $(if ($logDump) { " LOG: $logDump" } else { '' })
 	}
-	Write-Warning "otclient.exe was still running after $TimeoutSeconds seconds. Captured STDERR (if any) shown below."
-	if ($stdErr) {
-		Write-Warning $stdErr
-	}
-	else {
-		Write-Host "No STDERR captured." -ForegroundColor Yellow
-	}
+	Write-Warning "otclient.exe was still running after $TimeoutSeconds seconds."
 	Write-Host "Process stayed alive for the full timeout; treating as success." -ForegroundColor Green
 	return
 }
 
 $exitCode = $process.ExitCode
-
-$process.remove_OutputDataReceived($stdoutHandler)
-$process.remove_ErrorDataReceived($stderrHandler)
 $process.Dispose()
 
-$stdOut = [string]::Join([System.Environment]::NewLine, $stdOutLines.ToArray())
-$stdErrFinal = [string]::Join([System.Environment]::NewLine, $stdErrLines.ToArray())
+$logDumpOnExit = Show-OtclientLog -RootPath $tempRoot
 
 if (-not $KeepExtracted) {
 	& $cleanupTemp $tempRoot
 }
 
 if ($exitCode -ne 0) {
-	throw "otclient.exe exited with code $exitCode. STDERR: $stdErrFinal"
+	$logNote = ''
+	if ($logDumpOnExit) {
+		$logNote = " LOG: $logDumpOnExit"
+	}
+	throw "otclient.exe exited with code $exitCode.$logNote"
 }
 
 Write-Host "otclient.exe finished successfully." -ForegroundColor Green
-if ($stdOut) {
-	Write-Host "STDOUT:`n$stdOut"
-}
-if ($stdErrFinal) {
-	Write-Warning "STDERR:`n$stdErrFinal"
-}

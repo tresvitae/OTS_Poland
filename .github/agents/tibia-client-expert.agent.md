@@ -2,7 +2,7 @@
 description: 'OTClient and OTCv8 specialist for Adventure OTS client work: Lua modules, .otui UI, theming, protocol safety, performance, and packaging compatibility with TFS 1.4.2 / protocol 10.98.'
 name: 'Tibia Client Expert'
 tools: ['read', 'edit', 'search', 'execute']
-model: GPT-5.1-Codex (copilot)
+model: GPT-5.3-Codex (copilot)
 target: 'vscode'
 ---
 
