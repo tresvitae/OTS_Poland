@@ -153,6 +153,7 @@ docker compose --profile debug down
 ### Agent Debug (ulepszony)
 
 Plik agenta: `.github/agents/debug.agent.md`
+Prompt slash-command: `.github/prompts/debug-ots.prompt.md`
 
 Agent został rozszerzony o:
 
@@ -162,6 +163,12 @@ Agent został rozszerzony o:
 - ustandaryzowany format raportu końcowego
 
 Ten tryb jest zalecany przy zgłoszeniach typu: `ERROR 2`, `500 API`, `Connection refused`, `Map not found`.
+
+Szybkie użycie w GitHub Copilot Chat (VS Code):
+
+```text
+/debug-ots issue="Login ERROR 2 po wyborze postaci" context="konto Patryk/test, stack uruchomiony lokalnie"
+```
 
 ## ⚠️ Częste problemy
 
