@@ -21,6 +21,15 @@ function ProtocolLogin:login(host, port, accountName, accountPassword, authentic
         return
     end
 
+    g_logger.info(string.format(
+        'ProtocolLogin.login: host=%s port=%s accountLength=%d tokenLength=%d stayLogged=%s',
+        tostring(host),
+        tostring(port),
+        string.len(accountName or ''),
+        string.len(authenticatorToken or ''),
+        tostring(stayLogged)
+    ))
+
     self.accountName = accountName
     self.accountPassword = accountPassword
     self.authenticatorToken = authenticatorToken
@@ -132,6 +141,15 @@ function ProtocolLogin:sendLoginPacket()
         self:enableChecksum()
     end
 
+    g_logger.debug(string.format(
+        'ProtocolLogin.sendLoginPacket: clientVersion=%d protocolVersion=%d packetSize=%d encrypted=%s sequenced=%s',
+        g_game.getClientVersion(),
+        g_game.getProtocolVersion(),
+        msg:getMessageSize(),
+        tostring(g_game.getFeature(GameLoginPacketEncryption)),
+        tostring(g_game.getFeature(GameSequencedPackets))
+    ))
+
     self:send(msg)
 
     if g_game.getFeature(GameLoginPacketEncryption) then
@@ -149,6 +167,7 @@ end
 
 function ProtocolLogin:onConnect()
     self.gotConnection = true
+    g_logger.info('ProtocolLogin.onConnect: connection established to login server')
     self:connectCallback()
     self.connectCallback = nil
 end
@@ -156,6 +175,7 @@ end
 function ProtocolLogin:onRecv(msg)
     while not msg:eof() do
         local opcode = msg:getU8()
+        g_logger.debug(string.format('ProtocolLogin.onRecv: opcode=%d', opcode))
         if opcode == LoginServerErrorNew then
             self:parseError(msg)
         elseif opcode == LoginServerError then
@@ -188,6 +208,7 @@ end
 
 function ProtocolLogin:parseError(msg)
     local errorMessage = msg:getString()
+    g_logger.warning(string.format('ProtocolLogin.parseError: %s', tostring(errorMessage)))
     signalcall(self.onLoginError, self, errorMessage)
 end
 
@@ -262,6 +283,14 @@ function ProtocolLogin:parseCharacterList(msg)
         account.subStatus = account.premDays > 0 and SubscriptionStatus.Premium or SubscriptionStatus.Free
     end
 
+    g_logger.info(string.format(
+        'ProtocolLogin.parseCharacterList: characters=%d accountStatus=%s subStatus=%s premDays=%s',
+        table.size(characters),
+        tostring(account.status),
+        tostring(account.subStatus),
+        tostring(account.premDays)
+    ))
+
     signalcall(self.onCharacterList, self, characters, account)
 end
 
@@ -269,6 +298,11 @@ function ProtocolLogin:parseExtendedCharacterList(msg)
     local characters = msg:getTable()
     local account = msg:getTable()
     local otui = msg:getString()
+    g_logger.info(string.format(
+        'ProtocolLogin.parseExtendedCharacterList: characters=%d accountStatus=%s',
+        table.size(characters or {}),
+        tostring(account and account.status)
+    ))
     signalcall(self.onCharacterList, self, characters, account, otui)
 end
 
@@ -277,6 +311,7 @@ function ProtocolLogin:parseOpcode(opcode, msg)
 end
 
 function ProtocolLogin:onError(msg, code)
+    g_logger.error(string.format('ProtocolLogin.onError: code=%s description=%s', tostring(code), tostring(msg)))
     local text = translateNetworkError(code, self:isConnecting(), msg)
     signalcall(self.onLoginError, self, text)
 end

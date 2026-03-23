@@ -11,6 +11,8 @@ local motdEnabled = true
 
 -- private functions
 local function onError(protocol, message, errorCode)
+    g_logger.error(string.format('EnterGame login error: code=%s message=%s', tostring(errorCode), tostring(message)))
+
     if loadBox then
         loadBox:destroy()
         loadBox = nil
@@ -582,6 +584,15 @@ function EnterGame.onClientVersionChange(comboBox, text, data)
 end
 
 function EnterGame.tryHttpLogin(clientVersion, httpLogin)
+    g_logger.info(string.format(
+        'HTTP login selected: host=%s port=%s clientVersion=%d httpLogin=%s accountLength=%d',
+        tostring(G.host),
+        tostring(G.port),
+        clientVersion,
+        tostring(httpLogin),
+        string.len(G.account or '')
+    ))
+
     g_game.setClientVersion(clientVersion)
     g_game.setProtocolVersion(g_game.getClientProtocolVersion(clientVersion))
     g_game.chooseRsa(G.host)
@@ -730,6 +741,18 @@ function EnterGame.doLogin()
     G.port = tonumber(enterGame:getChildById('serverPortTextEdit'):getText())
     local clientVersion = tonumber(clientBox:getText())
     local httpLogin = enterGame:getChildById('httpLoginBox'):isChecked()
+
+    g_logger.info(string.format(
+        'Login attempt: host=%s port=%s clientVersion=%s httpLogin=%s accountLength=%d tokenLength=%d stayLogged=%s',
+        tostring(G.host),
+        tostring(G.port),
+        tostring(clientVersion),
+        tostring(httpLogin),
+        string.len(G.account or ''),
+        string.len(G.authenticatorToken or ''),
+        tostring(G.stayLogged)
+    ))
+
     EnterGame.hide()
 
     if g_game.isOnline() then
@@ -745,8 +768,10 @@ function EnterGame.doLogin()
     g_settings.set('client-version', clientVersion)
 
     if clientVersion >= 1281 and G.port ~= 7171 then
+        g_logger.info('Login path: HTTP login flow')
         EnterGame.tryHttpLogin(clientVersion, httpLogin)
     else
+        g_logger.info('Login path: direct protocol login flow')
         protocolLogin = ProtocolLogin.create()
         protocolLogin.onLoginError = onError
         protocolLogin.onMotd = onMotd
@@ -768,8 +793,10 @@ function EnterGame.doLogin()
         g_game.chooseRsa(G.host)
 
         if modules.game_things.isLoaded() then
+            g_logger.debug(string.format('Sending protocol login packet to %s:%s', tostring(G.host), tostring(G.port)))
             protocolLogin:login(G.host, G.port, G.account, G.password, G.authenticatorToken, G.stayLogged)
         else
+            g_logger.error(string.format('Cannot login: game_things not loaded for clientVersion=%s', tostring(clientVersion)))
             if loadBox then
                 loadBox:destroy()
                 loadBox = nil
