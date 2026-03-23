@@ -99,7 +99,14 @@ local function loadModules()
 
     -- mods 1000-9999
     g_modules.autoLoadModules(9999)
-    g_modules.ensureModuleLoaded('client_mods')
+
+    -- Some distributions no longer ship a dedicated client_mods module.
+    -- Keep startup compatible by loading it only when discovered.
+    if g_modules.getModule('client_mods') then
+        g_modules.ensureModuleLoaded('client_mods')
+    else
+        g_logger.warning("Optional module 'client_mods' not found; continuing startup.")
+    end
 
     local script = '/' .. g_app.getCompactName() .. 'rc.lua'
 

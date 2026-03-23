@@ -40,6 +40,30 @@ These steps describe how we build and package the customized Adventure OTS Windo
 4. **Distribute** — The AAC frontend serves the latest bundle from `/downloads/windows/adventure-ots-client-windows.zip`. Uploading that file is enough for players; no extra installer is required.
 5. **Smoke-test the bundle** — Run `pwsh -File scripts/test-client.ps1 -EnableDebug -TimeoutSeconds 20` from the repo root. The helper in [scripts/test-client.ps1](../../scripts/test-client.ps1) extracts the latest zip to a temp folder, launches the client, and prints `otclient.log` so fatal module issues and GPU/OpenGL startup details are visible. Optionally keep the workspace with `-KeepExtracted` for manual inspection. Pass extra flags via `-ClientArgs` (e.g., `-ClientArgs "--force-opengl"`) or fail builds decisively with `-FailOnTimeout`.
 
+### Startup Troubleshooting: `Unable to load 'client_mods' module`
+
+If startup fails with `FATAL ERROR: Unable to load 'client_mods' module`, your runtime package is likely loading a module that does not exist in the shipped `modules/` or `mods/` folders.
+
+Use this quick checklist:
+
+1. Repackage from the current source runtime files:
+
+```powershell
+pwsh -File adventure-ots/client/tools/package-windows.ps1 -ExecutablePath <path-to-otclient.exe>
+```
+
+2. Re-run smoke test with debug logging:
+
+```powershell
+pwsh -File scripts/test-client.ps1 -EnableDebug -TimeoutSeconds 20
+```
+
+3. Confirm `init.lua` does not hard-fail on optional modules that are not present in the package.
+
+Expected log behavior when optional module is absent:
+- warning in `otclient.log`
+- startup continues (`Startup done :]`)
+
 > [!TIP]
 > `adventure-ots/client/dist/` is regenerated every packaging run. Add it to `.gitignore` (repo root or client-level) to prevent accidental commits while keeping the published zip under source control via `aac-frontend/public/downloads/windows/`.
 
