@@ -108,6 +108,9 @@ EnterGame.setUniqueServer("127.0.0.1", 7171, 1098)
 # Logi wszystkich serwisów
 docker compose logs -f
 
+# Uruchomienie z profilem debug (dodatkowe narzędzia)
+docker compose --profile debug up -d
+
 # Logi konkretnego serwisu
 docker compose logs -f aac-backend
 docker compose logs -f aac-frontend
@@ -125,6 +128,40 @@ docker compose exec db mysql -uroot -ptwoje_haslo ots_baza
 docker compose down -v
 docker compose up -d --build
 ```
+
+### Profil debug (Docker Compose)
+
+W `docker-compose.yml` dodano dedykowany profil `debug`.
+
+- Serwis debug: `adminer` (`ots_adminer`)
+- Dostęp: http://localhost:8081
+- Serwer DB w Adminer: `db`
+
+Przykładowy start pełnego środowiska z narzędziami debug:
+
+```bash
+docker compose up -d --build
+docker compose --profile debug up -d
+```
+
+Wyłączenie narzędzi debug bez zatrzymywania głównych usług:
+
+```bash
+docker compose --profile debug down
+```
+
+### Agent Debug (ulepszony)
+
+Plik agenta: `.github/agents/debug.agent.md`
+
+Agent został rozszerzony o:
+
+- workflow Docker-first (reprodukcja, logi, hipotezy, weryfikacja)
+- checklistę dla typowych problemów OTS (login, API, proxy, startup)
+- wymagane artefakty końcowe (dowód naprawy + brak regresji)
+- ustandaryzowany format raportu końcowego
+
+Ten tryb jest zalecany przy zgłoszeniach typu: `ERROR 2`, `500 API`, `Connection refused`, `Map not found`.
 
 ## ⚠️ Częste problemy
 

@@ -95,20 +95,32 @@ router.post('/create', authMiddleware, async (req: AuthRequest, res: Response): 
             return;
         }
 
+        // Resolve town spawn to avoid invalid default position (0,0,0).
+        const [townRows] = await pool.query<RowDataPacket[]>(
+            'SELECT id, posx, posy, posz FROM towns WHERE id = ? LIMIT 1',
+            [DEFAULT_TOWN]
+        );
+
+        if (townRows.length === 0) {
+            res.status(500).json({ error: 'Brak skonfigurowanego miasta startowego' });
+            return;
+        }
+
+        const spawn = townRows[0];
         const voc = VOCATIONS[vocId];
 
         // Insert new character
         const [result] = await pool.query<ResultSetHeader>(
             `INSERT INTO players 
         (name, group_id, account_id, level, vocation, health, healthmax, 
-         experience, looktype, maglevel, mana, manamax, soul, town_id, cap, sex,
+         experience, looktype, maglevel, mana, manamax, soul, town_id, posx, posy, posz, cap, sex,
          skill_fist, skill_club, skill_sword, skill_axe, skill_dist, skill_shielding, skill_fishing)
-       VALUES (?, 1, ?, 8, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, 10, 10, 10, 10, 10, 10, 10)`,
+       VALUES (?, 1, ?, 8, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 10, 10, 10, 10, 10, 10, 10)`,
             [
                 trimmedName, accountId, vocId,
                 voc.health, voc.healthmax, LEVEL_8_EXP,
                 voc.looktype, voc.mana, voc.manamax,
-                voc.soul, DEFAULT_TOWN, voc.cap, playerSex,
+                voc.soul, DEFAULT_TOWN, spawn.posx, spawn.posy, spawn.posz, voc.cap, playerSex,
             ]
         );
 

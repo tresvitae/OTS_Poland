@@ -18,11 +18,29 @@ import onlineRoutes from './routes/online';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
+const LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase();
+
+function isInfoLoggingEnabled(level: string): boolean {
+    return level === 'info' || level === 'debug' || level === 'trace';
+}
 
 // ── Middleware ──────────────────────────
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+if (isInfoLoggingEnabled(LOG_LEVEL)) {
+    app.use((req, res, next) => {
+        const startedAt = Date.now();
+        res.on('finish', () => {
+            const durationMs = Date.now() - startedAt;
+            console.log(
+                `[INFO] ${req.method} ${req.originalUrl} ${res.statusCode} ${durationMs}ms ip=${req.ip}`
+            );
+        });
+        next();
+    });
+}
 
 // ── Routes ─────────────────────────────
 app.use('/api/account', accountRoutes);
@@ -42,7 +60,7 @@ app.use((_req, res) => {
 
 // ── Start Server ───────────────────────
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🛡️  AAC Backend running on port ${PORT}`);
+    console.log(`🛡️  AAC Backend running on port ${PORT} (LOG_LEVEL=${LOG_LEVEL})`);
 });
 
 export default app;
