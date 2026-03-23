@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copilot hook: update root README.md and CHANGELOG.md with the last commit summary.
+# Copilot hook: update root README.md and CHANGELOG.md with today's commit summary.
 #
 # Project standards:
 # - Works from any subdirectory inside the git repo
@@ -19,19 +19,48 @@ cd "$repo_root"
 readme_file="README.md"
 changelog_file="CHANGELOG.md"
 today="$(date +%Y-%m-%d)"
-last_subject="$(git log -n 1 --pretty=%s 2>/dev/null || true)"
+docs_commit_pattern='^docs: update README/CHANGELOG'
 
-if [[ -z "$last_subject" ]]; then
+build_summary_from_today_commits() {
+  local max_items=6
+  local -a subjects=()
+
+  while IFS= read -r subject; do
+    [[ -z "$subject" ]] && continue
+    subjects+=("$subject")
+  done < <(git --no-pager log --since="${today} 00:00:00" --until="${today} 23:59:59" --pretty=%s --invert-grep --grep="$docs_commit_pattern" 2>/dev/null || true)
+
+  local count="${#subjects[@]}"
+  if (( count == 0 )); then
+    echo ""
+    return
+  fi
+
+  local summary=""
+  local idx=0
+  while (( idx < count && idx < max_items )); do
+    if [[ -n "$summary" ]]; then
+      summary+="; "
+    fi
+    summary+="${subjects[$idx]}"
+    ((idx += 1))
+  done
+
+  if (( count > max_items )); then
+    summary+="; +$((count - max_items)) more"
+  fi
+
+  echo "$summary"
+}
+
+summary="$(build_summary_from_today_commits)"
+if [[ -z "$summary" ]]; then
+  echo "No non-doc commits found for today - skipping docs update."
   exit 0
 fi
 
-# Skip self-generated docs commit to avoid loops.
-if [[ "$last_subject" =~ ^docs:\ update\ README/CHANGELOG ]]; then
-  exit 0
-fi
-
-entry="${today} - ${last_subject}"
-entry="${entry:0:140}"
+entry="${today} - ${summary}"
+entry="${entry:0:320}"
 
 ensure_file() {
   local file="$1"
@@ -85,6 +114,50 @@ insert_under_section_once() {
   return 0
 }
 
+remove_section_lines_by_prefix() {
+  local file="$1"
+  local section="$2"
+  local prefix="$3"
+
+  local tmp
+  tmp="$(mktemp)"
+  awk -v section="$section" -v prefix="$prefix" '
+    {
+      if ($0 == section) {
+        print $0
+        in_section = 1
+        next
+      }
+
+      if (in_section && $0 ~ /^### /) {
+        in_section = 0
+      }
+
+      if (in_section && index($0, prefix) == 1) {
+        next
+      }
+
+      print $0
+    }
+  ' "$file" > "$tmp"
+  mv "$tmp" "$file"
+}
+
+upsert_under_section_by_prefix() {
+  local file="$1"
+  local section="$2"
+  local prefix="$3"
+  local line="$4"
+
+  if grep -qF "$line" "$file"; then
+    return 1
+  fi
+
+  remove_section_lines_by_prefix "$file" "$section" "$prefix"
+  insert_under_section_once "$file" "$section" "$line"
+  return 0
+}
+
 ensure_file "$readme_file"
 ensure_file "$changelog_file"
 
@@ -100,12 +173,12 @@ ensure_section "$changelog_file" "### $today"
 
 updated=false
 
-if insert_under_section_once "$readme_file" "$readme_section" "- $entry"; then
+if upsert_under_section_by_prefix "$readme_file" "$readme_section" "- ${today} - " "- $entry"; then
   echo "Updated README section: $readme_section"
   updated=true
 fi
 
-if insert_under_section_once "$changelog_file" "### $today" "- $entry"; then
+if upsert_under_section_by_prefix "$changelog_file" "### $today" "- ${today} - " "- $entry"; then
   echo "Updated CHANGELOG section: ### $today"
   updated=true
 fi

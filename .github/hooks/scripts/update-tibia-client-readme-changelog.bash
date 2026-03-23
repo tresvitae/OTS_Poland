@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copilot hook: update docs only when the latest relevant commit includes Tibia client files.
+# Copilot hook: update docs only when today's commits include Tibia client files.
 #
 # Client area for this repo:
 # - adventure-ots/client/**
@@ -16,39 +16,48 @@ cd "$repo_root"
 readme_file="README.md"
 changelog_file="CHANGELOG.md"
 today="$(date +%Y-%m-%d)"
+docs_commit_pattern='^docs: update README/CHANGELOG'
 
-# Resolve latest non-docs commit so this script still works even if another hook
-# already created a docs commit on HEAD.
-target_commit="$(git rev-list -n 1 --invert-grep --grep='^docs: update README/CHANGELOG' HEAD 2>/dev/null || true)"
-if [[ -z "$target_commit" ]]; then
-  exit 0
-fi
+build_summary_from_today_client_commits() {
+  local max_items=6
+  local -a subjects=()
 
-last_subject="$(git log -n 1 --pretty=%s "$target_commit" 2>/dev/null || true)"
+  while IFS= read -r subject; do
+    [[ -z "$subject" ]] && continue
+    subjects+=("$subject")
+  done < <(git --no-pager log --since="${today} 00:00:00" --until="${today} 23:59:59" --pretty=%s --invert-grep --grep="$docs_commit_pattern" -- adventure-ots/client 2>/dev/null || true)
 
-if [[ -z "$last_subject" ]]; then
-  exit 0
-fi
-
-# Detect whether the target commit touched Adventure OTS client files.
-changed_paths="$(git diff-tree --no-commit-id --name-only -r "$target_commit" 2>/dev/null || true)"
-is_client_change=false
-
-while IFS= read -r path; do
-  [[ -z "$path" ]] && continue
-  if [[ "$path" =~ ^adventure-ots/client/ ]]; then
-    is_client_change=true
-    break
+  local count="${#subjects[@]}"
+  if (( count == 0 )); then
+    echo ""
+    return
   fi
-done <<< "$changed_paths"
 
-if [[ "$is_client_change" != true ]]; then
-  echo "No Tibia client changes in latest relevant commit - skipping docs update."
+  local summary=""
+  local idx=0
+  while (( idx < count && idx < max_items )); do
+    if [[ -n "$summary" ]]; then
+      summary+="; "
+    fi
+    summary+="${subjects[$idx]}"
+    ((idx += 1))
+  done
+
+  if (( count > max_items )); then
+    summary+="; +$((count - max_items)) more"
+  fi
+
+  echo "$summary"
+}
+
+summary="$(build_summary_from_today_client_commits)"
+if [[ -z "$summary" ]]; then
+  echo "No Tibia client changes found for today - skipping docs update."
   exit 0
 fi
 
-entry="${today} - ${last_subject}"
-entry="${entry:0:140}"
+entry="${today} - ${summary}"
+entry="${entry:0:320}"
 
 ensure_file() {
   local file="$1"
@@ -102,6 +111,50 @@ insert_under_section_once() {
   return 0
 }
 
+remove_section_lines_by_prefix() {
+  local file="$1"
+  local section="$2"
+  local prefix="$3"
+
+  local tmp
+  tmp="$(mktemp)"
+  awk -v section="$section" -v prefix="$prefix" '
+    {
+      if ($0 == section) {
+        print $0
+        in_section = 1
+        next
+      }
+
+      if (in_section && $0 ~ /^### /) {
+        in_section = 0
+      }
+
+      if (in_section && index($0, prefix) == 1) {
+        next
+      }
+
+      print $0
+    }
+  ' "$file" > "$tmp"
+  mv "$tmp" "$file"
+}
+
+upsert_under_section_by_prefix() {
+  local file="$1"
+  local section="$2"
+  local prefix="$3"
+  local line="$4"
+
+  if grep -qF "$line" "$file"; then
+    return 1
+  fi
+
+  remove_section_lines_by_prefix "$file" "$section" "$prefix"
+  insert_under_section_once "$file" "$section" "$line"
+  return 0
+}
+
 ensure_file "$readme_file"
 ensure_file "$changelog_file"
 
@@ -116,12 +169,12 @@ ensure_section "$changelog_file" "### $today"
 
 updated=false
 
-if insert_under_section_once "$readme_file" "$readme_section" "- [Client] $entry"; then
+if upsert_under_section_by_prefix "$readme_file" "$readme_section" "- [Client] ${today} - " "- [Client] $entry"; then
   echo "Updated README section: $readme_section"
   updated=true
 fi
 
-if insert_under_section_once "$changelog_file" "### $today" "- [Client] $entry"; then
+if upsert_under_section_by_prefix "$changelog_file" "### $today" "- [Client] ${today} - " "- [Client] $entry"; then
   echo "Updated CHANGELOG section: ### $today"
   updated=true
 fi

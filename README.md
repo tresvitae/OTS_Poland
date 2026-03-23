@@ -115,5 +115,6 @@ Jeśli coś nie działa, sprawdź logi konkretnego serwisu:
 * [ ] Testowe logowanie postacią `1/1` lub stworzoną przez WWW.
 ### Recent changes
 
-- 2026-03-23 - Improve hooks
+- 2026-03-23 - Improve hooks; Add logs for debugging.; Corrected login field semantics.; add debug networking ots prompt; Improve agent; Add loging level of info.; +10 more
+
 
