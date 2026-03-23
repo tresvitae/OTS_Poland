@@ -172,9 +172,28 @@ g_logger.info('== startup sequence completed')
 -- Adventure OTS: default server target
 -- Protocol 1098 = Tibia client version 10.98 (fixed)
 do
+    local function parseBoolEnv(name, fallback)
+        local value = os.getenv(name)
+        if not value or value == '' then
+            return fallback
+        end
+
+        local normalized = value:lower()
+        if normalized == '1' or normalized == 'true' or normalized == 'yes' or normalized == 'on' then
+            return true
+        end
+        if normalized == '0' or normalized == 'false' or normalized == 'no' or normalized == 'off' then
+            return false
+        end
+
+        g_logger.warning(string.format('Invalid %s value (%s); using fallback.', name, value))
+        return fallback
+    end
+
     local defaultHost = '127.0.0.1'
     local defaultPort = 7171
     local fixedProtocol = 1098
+    local defaultHttpLogin = true
 
     local host = os.getenv('OTCLIENT_SERVER_HOST') or defaultHost
     if host == '' then
@@ -189,4 +208,21 @@ do
 
     EnterGame.setUniqueServer(host, port, fixedProtocol)
     g_logger.info(string.format('== default server configured: %s:%d (protocol %d)', host, port, fixedProtocol))
+
+    -- Enable HTTP login by default on first launch.
+    -- OTCLIENT_HTTP_LOGIN can force default on/off (true|false, 1|0, yes|no, on|off).
+    local configuredHttpLogin = parseBoolEnv('OTCLIENT_HTTP_LOGIN', defaultHttpLogin)
+    local httpLogin = configuredHttpLogin
+
+    if g_settings and g_settings.get and g_settings.getBoolean and g_settings.set then
+        local savedHttpLogin = g_settings.get('httpLogin')
+        if savedHttpLogin ~= nil and savedHttpLogin ~= '' then
+            httpLogin = g_settings.getBoolean('httpLogin')
+        else
+            g_settings.set('httpLogin', configuredHttpLogin)
+        end
+    end
+
+    EnterGame.setHttpLogin(httpLogin)
+    g_logger.info(string.format('== http login %s', httpLogin and 'enabled' or 'disabled'))
 end
