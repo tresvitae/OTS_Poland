@@ -113,3 +113,7 @@ Jeśli coś nie działa, sprawdź logi konkretnego serwisu:
 * [ ] Zmiana JWT_SECRET na bezpieczny losowy ciąg w produkcji.
 * [ ] Wyłączenie modułu Marketu w OTClient.
 * [ ] Testowe logowanie postacią `1/1` lub stworzoną przez WWW.
+### Recent changes
+
+- 2026-03-23 - Improve hooks
+
