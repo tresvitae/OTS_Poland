@@ -86,7 +86,7 @@ insert_under_section_once() {
   local section="$2"
   local line="$3"
 
-  if grep -qF "$line" "$file"; then
+  if grep -qF -- "$line" "$file"; then
     return 1
   fi
 
@@ -149,7 +149,7 @@ upsert_under_section_by_prefix() {
   local prefix="$3"
   local line="$4"
 
-  if grep -qF "$line" "$file"; then
+  if grep -qF -- "$line" "$file"; then
     return 1
   fi
 
