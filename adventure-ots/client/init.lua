@@ -35,6 +35,20 @@ end
 
 -- setup logger
 g_logger.setLogFile(g_resources.getWorkDir() .. g_app.getCompactName() .. '.log')
+
+-- Default to info-level logs for troubleshooting builds.
+-- Override with OTCLIENT_LOG_LEVEL (1=debug, 2=info, 3=warning, 4=error, 5=fatal).
+do
+    local defaultLevel = 2
+    local configuredLevel = tonumber(os.getenv('OTCLIENT_LOG_LEVEL') or '') or defaultLevel
+
+    if configuredLevel < 1 then configuredLevel = 1 end
+    if configuredLevel > 5 then configuredLevel = 5 end
+
+    g_logger.setLevel(configuredLevel)
+    g_logger.info(string.format('== logger level set to %d', configuredLevel))
+end
+
 g_logger.info(os.date('== application started at %b %d %Y %X'))
 g_logger.info("== operating system: " .. g_platform.getOSName())
 
@@ -55,28 +69,43 @@ end
 if not g_resources.addSearchPath(g_resources.getWorkDir() .. 'data', true) then
     g_logger.fatal('Unable to add data directory to the search path.')
 end
+g_logger.info("== search path added: " .. g_resources.getWorkDir() .. 'data')
 
 -- add modules directory to the search path
 if not g_resources.addSearchPath(g_resources.getWorkDir() .. 'modules', true) then
     g_logger.fatal('Unable to add modules directory to the search path.')
 end
+g_logger.info("== search path added: " .. g_resources.getWorkDir() .. 'modules')
 
 g_html.addGlobalStyle('/data/styles/html.css')
 g_html.addGlobalStyle('/data/styles/custom.css')
 
 -- try to add mods path too
 g_resources.addSearchPath(g_resources.getWorkDir() .. 'mods', true)
+g_logger.info("== search path added: " .. g_resources.getWorkDir() .. 'mods')
 
 -- setup directory for saving configurations
 g_resources.setupUserWriteDir(('%s/'):format(g_app.getCompactName()))
+g_logger.info("== user write dir: " .. g_resources.getWriteDir())
 
 -- search all packages
 g_resources.searchAndAddPackages('/', '.otpkg', true)
+g_logger.info("== package discovery completed (.otpkg)")
 
 -- load settings
 g_configs.loadSettings('/config.otml')
+g_logger.info("== settings loaded: /config.otml")
 
 g_modules.discoverModules()
+
+do
+    local discovered = g_modules.getModules() or {}
+    local discoveredCount = 0
+    for _ in pairs(discovered) do
+        discoveredCount = discoveredCount + 1
+    end
+    g_logger.info(string.format('== discovered modules: %d', discoveredCount))
+end
 
 -- libraries modules 0-99
 g_modules.autoLoadModules(99)
@@ -112,6 +141,19 @@ local function loadModules()
 
     if g_resources.fileExists(script) then
         dofile(script)
+        g_logger.info("== user startup script loaded: " .. script)
+    else
+        g_logger.info("== user startup script not found: " .. script)
+    end
+
+    do
+        local loadedCount = 0
+        for _, module in pairs(g_modules.getModules() or {}) do
+            if module and module:isLoaded() then
+                loadedCount = loadedCount + 1
+            end
+        end
+        g_logger.info(string.format('== loaded modules: %d', loadedCount))
     end
 
     -- uncomment the line below so that modules are reloaded when modified. (Note: Use only mod dev)
@@ -125,7 +167,26 @@ if g_app.hasUpdater() then
 end
 
 loadModules()
+g_logger.info('== startup sequence completed')
 
--- Adventure OTS: hardcode connection to local server
--- Protocol 1098 = Tibia client version 10.98
-EnterGame.setUniqueServer("127.0.0.1", 7171, 1098)
+-- Adventure OTS: default server target
+-- Protocol 1098 = Tibia client version 10.98 (fixed)
+do
+    local defaultHost = '127.0.0.1'
+    local defaultPort = 7171
+    local fixedProtocol = 1098
+
+    local host = os.getenv('OTCLIENT_SERVER_HOST') or defaultHost
+    if host == '' then
+        host = defaultHost
+    end
+
+    local port = tonumber(os.getenv('OTCLIENT_SERVER_PORT') or '') or defaultPort
+    if port < 1 or port > 65535 then
+        g_logger.warning(string.format('Invalid OTCLIENT_SERVER_PORT (%s); using default %d.', tostring(port), defaultPort))
+        port = defaultPort
+    end
+
+    EnterGame.setUniqueServer(host, port, fixedProtocol)
+    g_logger.info(string.format('== default server configured: %s:%d (protocol %d)', host, port, fixedProtocol))
+end
