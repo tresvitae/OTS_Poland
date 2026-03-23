@@ -589,14 +589,3 @@ Found a bug? Please create an issue in our **[bug tracker](https://github.com/me
 | Canary (14.00 ~ 14.12) | OpenTibiaBr | [See Wiki](https://docs.opentibiabr.com/opentibiabr/projects/otclient-redemption/about#how-to-connect-on-canary-with-otclient-redemption) | ✅ |
 | Canary (15.00 ~ 15.11) | OpenTibiaBr | [See Wiki](https://docs.opentibiabr.com/opentibiabr/projects/otclient-redemption/about#how-to-connect-on-canary-with-otclient-redemption) | ✅ |
 
----
-
-## <a id="license"></a>©️ License
-OTClient is made available under the **MIT License** — you are free to use it for commercial, non-commercial, closed or open projects.  
-See: [MIT License](http://opensource.org/licenses/MIT)
-
----
-
-## <a id="contributors"></a>❤️ Contributors
-If you are interested in supporting the project, donate here:  
-**[PayPal](https://www.paypal.com/donate/?business=CV9D5JF8E46LY&no_recurring=0&item_name=Thank+you+very+much+for+your+donation.&currency_code=BRL)**
