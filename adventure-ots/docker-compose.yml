@@ -82,6 +82,8 @@ services:
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: /api
+    volumes:
+      - ./aac-frontend/public/downloads:/app/public/downloads:ro
     depends_on:
       - aac-backend
     networks:
@@ -98,6 +100,8 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    volumes:
+      - ./aac-frontend/public/downloads:/srv/downloads:ro
     depends_on:
       - aac-backend
       - aac-frontend

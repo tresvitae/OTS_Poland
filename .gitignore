@@ -5,3 +5,4 @@ TODO
 adventure-ots/tfs/key.pem.pub
 .venv
 adventure-ots/aac-frontend/public/downloads/*.zip
+adventure-ots/aac-frontend/public/downloads/windows/*.zip

@@ -1,6 +1,47 @@
+import fs from 'fs';
+import path from 'path';
+
 import Navbar from '@/components/Navbar';
 
+export const dynamic = 'force-dynamic';
+
+const DOWNLOAD_ROUTE = '/downloads/windows/adventure-ots-client-windows.zip';
+const DOWNLOAD_FS_PATH = path.join(
+    process.cwd(),
+    'public',
+    'downloads',
+    'windows',
+    'adventure-ots-client-windows.zip',
+);
+
+function getZipStatus() {
+    if (!fs.existsSync(DOWNLOAD_FS_PATH)) {
+        return { available: false, sizeLabel: null } as const;
+    }
+
+    const bytes = fs.statSync(DOWNLOAD_FS_PATH).size;
+    return {
+        available: true,
+        sizeLabel: formatBytes(bytes),
+    } as const;
+}
+
+function formatBytes(bytes: number): string {
+    if (!Number.isFinite(bytes) || bytes <= 0) {
+        return '0 B';
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    const value = bytes / Math.pow(1024, exponent);
+    const precision = exponent === 0 ? 0 : 1;
+
+    return `${value.toFixed(precision)} ${units[exponent]}`;
+}
+
 export default function DownloadPage() {
+    const zipStatus = getZipStatus();
+
     return (
         <>
             <Navbar />
@@ -20,13 +61,20 @@ export default function DownloadPage() {
                     </p>
                     
                     <div className="pt-4 space-y-4">
-                        <a
-                            href="/downloads/windows/adventure-ots-client-windows.zip"
-                            className="inline-block btn-fantasy text-lg px-8 py-4"
-                            download
-                        >
-                            Pobierz dla Windows (ZIP)
-                        </a>
+                        {zipStatus.available ? (
+                            <a
+                                href={DOWNLOAD_ROUTE}
+                                className="inline-block btn-fantasy text-lg px-8 py-4"
+                                download
+                            >
+                                Pobierz dla Windows (ZIP)
+                            </a>
+                        ) : (
+                            <div className="rounded border border-red-500 bg-red-500/10 px-4 py-3 text-red-300">
+                                Brak spakowanego klienta na serwerze WWW. Dodaj plik ZIP,
+                                aby umożliwić pobieranie.
+                            </div>
+                        )}
 
                         <p className="text-stone-light text-sm max-w-xl mx-auto">
                             Jeśli kliknięcie zwraca 404, dodaj paczkę klienta pod ścieżką:
@@ -34,7 +82,9 @@ export default function DownloadPage() {
                         </p>
                         
                         <p className="text-stone-dark text-sm mt-2">
-                            Rozmiar pliku: ~50 MB
+                            {zipStatus.available
+                                ? `Rozmiar pliku: ${zipStatus.sizeLabel ?? 'nieznany'}`
+                                : 'Plik nie został jeszcze umieszczony.'}
                         </p>
                     </div>
                 </div>
