@@ -1,5 +1,5 @@
 # ==============================
-# AAC Backend — Multi-stage Build
+# Backend API — Multi-stage Build
 # ==============================
 
 # Stage 1: Build TypeScript

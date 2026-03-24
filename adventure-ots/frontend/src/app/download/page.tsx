@@ -78,7 +78,7 @@ export default function DownloadPage() {
 
                         <p className="text-stone-light text-sm max-w-xl mx-auto">
                             Jeśli kliknięcie zwraca 404, dodaj paczkę klienta pod ścieżką:
-                            <span className="block text-gold mt-1">aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip</span>
+                            <span className="block text-gold mt-1">frontend/public/downloads/windows/adventure-ots-client-windows.zip</span>
                         </p>
                         
                         <p className="text-stone-dark text-sm mt-2">

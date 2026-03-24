@@ -8,7 +8,7 @@ The service is built from C++ source and runs in Docker as the core MMORPG serve
 
 - Build and run TFS game server binary
 - Load world map, monsters, NPCs, scripts, and game systems
-- Connect to MariaDB schema used by TFS and AAC backend
+- Connect to MariaDB schema used by TFS and backend API
 - Expose game/login/status ports for Tibia clients
 
 ## Directory Overview

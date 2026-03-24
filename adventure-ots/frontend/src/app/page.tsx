@@ -104,7 +104,7 @@ export default function HomePage() {
 
                 {/* Footer */}
                 <footer className="text-center py-8 text-stone-dark text-xs border-t border-abyss-600/20 mt-8">
-                    <p>Adventure OTS © {new Date().getFullYear()} • Powered by TFS 1.4.2 &amp; AAC</p>
+                    <p>Adventure OTS © {new Date().getFullYear()} • Powered by TFS 1.4.2</p>
                 </footer>
             </main>
         </>

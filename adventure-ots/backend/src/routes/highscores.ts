@@ -1,5 +1,5 @@
 // ============================================================
-// AAC Backend — Highscores Route
+// Backend API — Highscores Route
 // Top players ranked by experience with pagination
 // ============================================================
 

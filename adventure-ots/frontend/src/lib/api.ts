@@ -1,5 +1,5 @@
 // ============================================================
-// API Client — Fetch wrapper for AAC Backend
+// API Client — Fetch wrapper for Backend API
 // Handles JWT token storage and API base URL
 // ============================================================
 

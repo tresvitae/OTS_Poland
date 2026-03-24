@@ -1,4 +1,4 @@
-# AAC Frontend (Adventure OTS)
+# Frontend (Adventure OTS)
 
 Web frontend for Adventure OTS, built with Next.js 14 App Router and Tailwind CSS.
 
@@ -24,7 +24,7 @@ The app provides account registration/login, character management, highscores, o
 ## Project Structure
 
 ```text
-aac-frontend/
+frontend/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx            # Root layout + metadata
@@ -52,7 +52,7 @@ aac-frontend/
 ## Requirements
 
 - Node.js 18+ (Node.js 20 recommended)
-- Running AAC backend API (directly or via reverse proxy)
+- Running backend API (directly or via reverse proxy)
 
 ## Environment Variables
 
@@ -146,7 +146,7 @@ Reusable style classes include:
 
 The download page expects this file path:
 
-- `aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip`
+- `frontend/public/downloads/windows/adventure-ots-client-windows.zip`
 
 Behavior:
 
@@ -167,7 +167,7 @@ NEXT_PUBLIC_API_URL=/api
 
 and mounts downloads directory:
 
-- `./aac-frontend/public/downloads:/app/public/downloads:ro`
+- `./frontend/public/downloads:/app/public/downloads:ro`
 
 ## Typical Workflow
 

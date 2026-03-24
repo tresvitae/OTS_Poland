@@ -1,5 +1,5 @@
 # ==============================
-# AAC Frontend — Multi-stage Build
+# Frontend — Multi-stage Build
 # Next.js 14 with standalone output
 # ==============================
 

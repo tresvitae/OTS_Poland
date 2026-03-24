@@ -35,9 +35,9 @@
 These steps describe how we build and package the customized Adventure OTS Windows client while keeping the repository clean:
 
 1. **Install prerequisites** — Visual Studio 2022 Build Tools (C++ workload + Windows 10 SDK), CMake, Ninja, PowerShell 7, and a local vcpkg checkout. Update the hard-coded paths near the top of [scripts/build-otclient-x86.ps1](../scripts/build-otclient-x86.ps1) (`$env:VCPKG_ROOT`, `$vcVarsPath`, `$clientDir`, `$downloadsDir`) if your environment differs.
-2. **Run the build script** — From the repo root execute `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build-otclient-x86.ps1`. The script configures CMake with Ninja, builds an x86 static `otclient.exe`, stages runtime data under `build/windows-x86-release/package-runtime`, and emits `aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip`.
+2. **Run the build script** — From the repo root execute `pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build-otclient-x86.ps1`. The script configures CMake with Ninja, builds an x86 static `otclient.exe`, stages runtime data under `build/windows-x86-release/package-runtime`, and emits `frontend/public/downloads/windows/adventure-ots-client-windows.zip`.
 3. **Repackage without rebuilding** — When only Lua/data changes occur, reuse the compiled binary by calling `pwsh -File adventure-ots/client/tools/package-windows.ps1 -ExecutablePath <path-to-otclient.exe>`. The script stages files under `adventure-ots/client/dist/windows` (a disposable directory you can safely ignore in git) before refreshing the downloadable zip.
-4. **Distribute** — The AAC frontend serves the latest bundle from `/downloads/windows/adventure-ots-client-windows.zip`. Uploading that file is enough for players; no extra installer is required.
+4. **Distribute** — The frontend serves the latest bundle from `/downloads/windows/adventure-ots-client-windows.zip`. Uploading that file is enough for players; no extra installer is required.
 5. **Smoke-test the bundle** — Run `pwsh -File scripts/test-client.ps1 -EnableDebug -TimeoutSeconds 20` from the repo root. The helper in [scripts/test-client.ps1](../../scripts/test-client.ps1) extracts the latest zip to a temp folder, launches the client, and prints `otclient.log` so fatal module issues and GPU/OpenGL startup details are visible. Optionally keep the workspace with `-KeepExtracted` for manual inspection. Pass extra flags via `-ClientArgs` (e.g., `-ClientArgs "--force-opengl"`) or fail builds decisively with `-FailOnTimeout`.
 
 ### Startup Troubleshooting: `Unable to load 'client_mods' module`
@@ -65,7 +65,7 @@ Expected log behavior when optional module is absent:
 - startup continues (`Startup done :]`)
 
 > [!TIP]
-> `adventure-ots/client/dist/` is regenerated every packaging run. Add it to `.gitignore` (repo root or client-level) to prevent accidental commits while keeping the published zip under source control via `aac-frontend/public/downloads/windows/`.
+> `adventure-ots/client/dist/` is regenerated every packaging run. Add it to `.gitignore` (repo root or client-level) to prevent accidental commits while keeping the published zip under source control via `frontend/public/downloads/windows/`.
 
 ---
 

@@ -52,13 +52,13 @@ services:
       - ots_network
 
   # ========================================
-  # AAC Backend - Node.js + TypeScript API
+  # Backend - Node.js + TypeScript API
   # ========================================
-  aac-backend:
+  backend:
     build:
-      context: ./aac-backend
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: aac_api
+    container_name: api
     restart: unless-stopped
     environment:
       LOG_LEVEL: info
@@ -76,21 +76,21 @@ services:
       - ots_network
 
   # ========================================
-  # AAC Frontend - Next.js SPA
+  # Frontend - Next.js SPA
   # ========================================
-  aac-frontend:
+  frontend:
     build:
-      context: ./aac-frontend
+      context: ./frontend
       dockerfile: Dockerfile
-    container_name: aac_web
+    container_name: web
     restart: unless-stopped
     environment:
       LOG_LEVEL: info
       NEXT_PUBLIC_API_URL: /api
     volumes:
-      - ./aac-frontend/public/downloads:/app/public/downloads:ro
+      - ./frontend/public/downloads:/app/public/downloads:ro
     depends_on:
-      - aac-backend
+      - backend
     networks:
       - ots_network
 
@@ -101,17 +101,17 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: aac_proxy
+    container_name: proxy
     restart: unless-stopped
     environment:
       LOG_LEVEL: info
     ports:
       - "80:80"
     volumes:
-      - ./aac-frontend/public/downloads:/srv/downloads:ro
+      - ./frontend/public/downloads:/srv/downloads:ro
     depends_on:
-      - aac-backend
-      - aac-frontend
+      - backend
+      - frontend
     networks:
       - ots_network
 

@@ -8,9 +8,9 @@ Complete development environment for running a Tibia OTS server using Docker Com
 |---------|-----------|------|-------------|
 | **MariaDB 10.11** | `ots_db` | `3306` | Database |
 | **TFS 1.4.2** | `ots_engine` | `7171`, `7172` | Game engine |
-| **AAC Backend** | `aac_api` | `3001` (internal) | API (Node.js + TypeScript) |
-| **AAC Frontend** | `aac_web` | `3000` (internal) | SPA website (Next.js + Tailwind) |
-| **Nginx** | `aac_proxy` | `80` | Reverse Proxy |
+| **Backend API** | `api` | `3001` (internal) | API (Node.js + TypeScript) |
+| **Frontend** | `web` | `3000` (internal) | SPA website (Next.js + Tailwind) |
+| **Nginx** | `proxy` | `80` | Reverse Proxy |
 
 ## 📂 Structure
 
@@ -25,11 +25,11 @@ adventure-ots/
 │   ├── config.lua.dist         # Original configuration
 │   ├── schema.sql              # TFS database schema
 │   └── data/                   # Game data (maps, NPCs, spells…)
-├── aac-backend/
+├── backend/
 │   ├── Dockerfile              # Node.js 20 Alpine (multi-stage)
 │   ├── package.json            # Express, mysql2, JWT, Helmet
 │   └── src/                    # TypeScript API (routes, auth, db)
-├── aac-frontend/
+├── frontend/
 │   ├── Dockerfile              # Next.js 14 standalone (multi-stage)
 │   ├── package.json            # React 18, Tailwind CSS
 │   └── src/                    # App Router (pages, components)
@@ -62,12 +62,12 @@ docker compose up -d --build
 
 | Service | URL / Address |
 |---------|---------------|
-| **Website (AAC)** | http://localhost |
+| **Website** | http://localhost |
 | **API Backend** | http://localhost/api/health |
 | **Game server** | `127.0.0.1:7171` (in client) |
 | **Database** | `localhost:3306` |
 
-> ✅ **Website status:** The AAC website works correctly at `http://localhost`. Creating new users and saving to the database works correctly. These features are fully available after a container restart.
+> ✅ **Website status:** The website works correctly at `http://localhost`. Creating new users and saving to the database works correctly. These features are fully available after a container restart.
 
 ### Default account
 - **Login:** `1`
@@ -91,7 +91,7 @@ Edit `tfs/config.lua`:
 
 The RSA key (`key.pem`) is generated automatically when the `gameserver` container starts, if the file does not exist or is corrupted.
 
-### AAC Backend
+### Backend API
 Environment variables (in `docker-compose.yml`):
 - `JWT_SECRET` — change to a random string in production
 - `DB_*` — database connection credentials
@@ -112,14 +112,14 @@ docker compose logs -f
 docker compose --profile debug up -d
 
 # Logs for a specific service
-docker compose logs -f aac-backend
-docker compose logs -f aac-frontend
+docker compose logs -f backend
+docker compose logs -f frontend
 docker compose logs -f nginx
 docker compose logs -f gameserver
 docker compose logs -f db
 
 # Restart a service
-docker compose restart aac-backend
+docker compose restart backend
 
 # Connect to the database
 docker compose exec db mysql -uroot -pyour_password ots_baza
@@ -177,7 +177,7 @@ Quick usage in GitHub Copilot Chat (VS Code):
 | TFS: "Connection refused" | DB is initializing — wait 30s, then `docker compose restart gameserver` |
 | TFS: "Map not found" | Check `mapName` in `config.lua` vs files in `tfs/data/world/` |
 | TFS: "Missing RSA private key PEM header" | Remove old containers (`docker compose down`) and rebuild (`docker compose up -d --build`) — the container will regenerate `key.pem` automatically |
-| AAC: Blank page | `docker compose logs aac-frontend` — check Next.js errors |
-| API: 500 error | `docker compose logs aac-backend` — check DB connection |
+| Frontend: Blank page | `docker compose logs frontend` — check Next.js errors |
+| API: 500 error | `docker compose logs backend` — check DB connection |
 | Client: "Things not loaded" | Place `.spr`/`.dat` assets in `client/data/things/1098/` |
 | DB: Missing tables | `docker compose down -v && docker compose up -d --build` |

@@ -1,5 +1,5 @@
 // ============================================================
-// AAC Backend — JWT Authentication Middleware
+// Backend API — JWT Authentication Middleware
 // Verifies Bearer token and attaches account info to request
 // ============================================================
 

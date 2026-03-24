@@ -6,6 +6,6 @@ Place the downloadable Windows client archive in this folder with this exact fil
 
 Final path:
 
-- `adventure-ots/aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip`
+- `adventure-ots/frontend/public/downloads/windows/adventure-ots-client-windows.zip`
 
 The download page links to `/downloads/windows/adventure-ots-client-windows.zip`.

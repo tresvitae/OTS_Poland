@@ -1,5 +1,5 @@
 // ============================================================
-// AAC Backend — Account Routes
+// Backend API — Account Routes
 // Register, Login, Change Password, List Characters
 // Password hashing: SHA1 (TFS 1.4.2 compatible)
 // ============================================================

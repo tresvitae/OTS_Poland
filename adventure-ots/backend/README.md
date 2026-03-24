@@ -1,6 +1,6 @@
-# AAC Backend (Adventure OTS)
+# Backend API (Adventure OTS)
 
-Headless REST API for Adventure OTS Account Management (AAC), built with Express + TypeScript.
+REST API for Adventure OTS Account Management, built with Express + TypeScript.
 
 This service handles account registration/login, JWT-protected account operations, character creation, highscores, and online player listing against a TFS-compatible MariaDB schema.
 
@@ -15,7 +15,7 @@ This service handles account registration/login, JWT-protected account operation
 ## Project Structure
 
 ```text
-aac-backend/
+backend/
 ├── src/
 │   ├── index.ts              # Express app bootstrap, middleware, route mounting
 │   ├── db.ts                 # DB pool configuration
@@ -111,7 +111,7 @@ Response:
 ```json
 {
 	"status": "ok",
-	"service": "aac-backend",
+	"service": "backend",
 	"timestamp": "2026-03-24T10:00:00.000Z"
 }
 ```

@@ -10,7 +10,7 @@ System for managing and deploying a Tibia Open Source (OTS) server based on **Do
 
 * **Game Engine:** The Forgotten Server (TFS) 1.4.2
 * **Database:** MariaDB 10.11 (LTS)
-* **Backend API:** Node.js + TypeScript + Express (Headless AAC)
+* **Backend API:** Node.js + TypeScript + Express
 * **Frontend SPA:** Next.js 14 + Tailwind CSS (Dark Fantasy RPG)
 * **Reverse Proxy:** Nginx
 * **Orchestration:** Docker Compose
@@ -25,8 +25,8 @@ System for managing and deploying a Tibia Open Source (OTS) server based on **Do
 │   ├── docker-compose.yml     # Main orchestration file
 │   ├── sql/                   # Seed data (admin account)
 │   ├── tfs/                   # Game engine (src, data, config.lua, schema.sql)
-│   ├── aac-backend/           # REST API (Node.js + TypeScript)
-│   ├── aac-frontend/          # SPA website (Next.js + Tailwind CSS)
+│   ├── backend/               # REST API (Node.js + TypeScript)
+│   ├── frontend/              # SPA website (Next.js + Tailwind CSS)
 │   ├── nginx/                 # Reverse Proxy
 │   └── client/                # Configured OTClient Mehah
 ├── src/                       # Project scripts
@@ -74,7 +74,7 @@ docker compose up -d --build
 
 | Service | URL / Address |
 | --- | --- |
-| **Website (AAC)** | http://localhost |
+| **Website** | http://localhost |
 | **API Health Check** | http://localhost/api/health |
 | **Game server** | `127.0.0.1:7171` (in client) |
 
@@ -89,7 +89,7 @@ docker compose up -d --build
 
 If you use AI agents for project development, pass them these guidelines:
 
-1. **Context:** This project is a microservices system in Docker containers. Lua script changes → `/tfs/data`. API changes → `/aac-backend/src`. UI changes → `/aac-frontend/src`.
+1. **Context:** This project is a microservices system in Docker containers. Lua script changes → `/tfs/data`. API changes → `/backend/src`. UI changes → `/frontend/src`.
 2. **Database:** Schema changes must be reflected in `tfs/schema.sql`. The backend connects directly to TFS tables.
 3. **Connectivity:** All services communicate over the internal Docker network (hostname: `db`).
 4. **Auth:** The backend uses JWT; passwords are stored as SHA1 hashes (compatible with TFS 1.4.2).
@@ -103,9 +103,9 @@ If something is not working, check the logs for the affected service:
 | Problem | Command |
 | --- | --- |
 | **Engine not starting** | `docker logs ots_engine` |
-| **API errors** | `docker logs aac_api` |
-| **Website errors** | `docker logs aac_web` |
-| **Proxy issues** | `docker logs aac_proxy` |
+| **API errors** | `docker logs api` |
+| **Website errors** | `docker logs web` |
+| **Proxy issues** | `docker logs proxy` |
 | **Database issues** | `docker logs ots_db` |
 
 ### Common errors:
@@ -118,7 +118,7 @@ If something is not working, check the logs for the affected service:
 
 ## ✅ Current Run Status
 
-* **Website (AAC)** works correctly at `http://localhost`.
+* **Website** works correctly at `http://localhost`.
 * **Registration:** Creating new users and saving to the database works correctly.
 * **Note:** All features are fully available after a container restart.
 
@@ -126,7 +126,7 @@ If something is not working, check the logs for the affected service:
 
 ## 📝 Roadmap
 
-* [x] Deploy AAC system (Backend + Frontend + Nginx)
+* [x] Deploy system (Backend + Frontend + Nginx)
 * [ ] Import a finished map into `tfs/data/world/`.
 * [ ] Change `JWT_SECRET` to a secure random string in production.
 * [ ] Disable the Market module in OTClient.

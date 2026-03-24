@@ -1,5 +1,5 @@
 // ============================================================
-// AAC Backend — Express Server Entry Point
+// Backend API — Express Server Entry Point
 // Mounts all routes, configures middleware, starts HTTP server
 // ============================================================
 
@@ -50,7 +50,7 @@ app.use('/api/online', onlineRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', service: 'aac-backend', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', service: 'backend', timestamp: new Date().toISOString() });
 });
 
 // 404 fallback
@@ -60,7 +60,7 @@ app.use((_req, res) => {
 
 // ── Start Server ───────────────────────
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🛡️  AAC Backend running on port ${PORT} (LOG_LEVEL=${LOG_LEVEL})`);
+    console.log(`🛡️  Backend API running on port ${PORT} (LOG_LEVEL=${LOG_LEVEL})`);
 });
 
 export default app;

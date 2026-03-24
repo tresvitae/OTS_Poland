@@ -1,5 +1,5 @@
 // ============================================================
-// AAC Backend — Database Connection Pool
+// Backend API — Database Connection Pool
 // Uses mysql2/promise for async queries against TFS MariaDB
 // ============================================================
 

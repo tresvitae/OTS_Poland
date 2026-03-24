@@ -1,7 +1,7 @@
 -- Instruction: 
 -- add json lib dofile('data/lib/json.lua')  in \data\lib\lib.lua
 
---[[ SQL TABLE - ZNOTE AAC
+--[[ SQL TABLE - ZNOTE ACCOUNT PANEL
 
 CREATE TABLE `znote_accounts` (
   `id` int(11) NOT NULL,

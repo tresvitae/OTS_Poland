@@ -4,8 +4,8 @@ Nginx is the public entrypoint for the Adventure OTS web stack.
 
 It routes:
 
-- API requests to AAC backend
-- Website traffic to AAC frontend
+- API requests to backend
+- Website traffic to frontend
 - Download files directly from mounted static storage
 
 ## Responsibilities
@@ -29,9 +29,9 @@ nginx/
 
 Configured in `nginx.conf`:
 
-- `/api/` -> `aac-backend:3001`
+- `/api/` -> `backend:3001`
 - `/downloads/` -> direct file serving from `/srv/downloads/`
-- `/` -> `aac-frontend:3000`
+- `/` -> `frontend:3000`
 
 This allows browser clients to call API under the same origin path (`/api`) without CORS complexity in standard deployment.
 
@@ -39,8 +39,8 @@ This allows browser clients to call API under the same origin path (`/api`) with
 
 Defined upstream groups:
 
-- `backend`: `aac-backend:3001`
-- `frontend`: `aac-frontend:3000`
+- `backend`: `backend:3001`
+- `frontend`: `frontend:3000`
 
 These hostnames match Docker Compose service names.
 
@@ -59,7 +59,7 @@ Behavior:
 
 In main Compose setup, this path is mounted from:
 
-- host: `adventure-ots/aac-frontend/public/downloads`
+- host: `adventure-ots/frontend/public/downloads`
 - container: `/srv/downloads`
 
 ## Proxy Headers
@@ -140,7 +140,7 @@ After startup, verify:
 Container logs:
 
 ```bash
-docker logs -f aac_proxy
+docker logs -f proxy
 ```
 
 Inside container:

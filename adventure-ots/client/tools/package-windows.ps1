@@ -11,7 +11,7 @@ $exe = Get-Item -LiteralPath $ExecutablePath -ErrorAction Stop
 $clientRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $repoRoot = (Resolve-Path (Join-Path $clientRoot '..')).Path
 $stageRoot = Join-Path $clientRoot 'dist/windows'
-$downloadsRoot = Join-Path $repoRoot 'aac-frontend/public/downloads/windows'
+$downloadsRoot = Join-Path $repoRoot 'frontend/public/downloads/windows'
 
 if ([string]::IsNullOrWhiteSpace($OutputZip)) {
     $OutputZip = Join-Path $downloadsRoot 'adventure-ots-client-windows.zip'

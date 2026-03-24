@@ -1,5 +1,5 @@
 # ==============================
-# Nginx Reverse Proxy for AAC
+# Nginx Reverse Proxy
 # Routes /api → backend, /* → frontend
 # ==============================
 FROM nginx:alpine

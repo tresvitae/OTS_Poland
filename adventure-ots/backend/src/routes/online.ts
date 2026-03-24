@@ -1,5 +1,5 @@
 // ============================================================
-// AAC Backend — Who Is Online Route
+// Backend API — Who Is Online Route
 // Lists currently online players from players_online table
 // ============================================================
 
