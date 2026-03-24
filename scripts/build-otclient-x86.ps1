@@ -36,17 +36,26 @@ if (-not (Test-Path $buildOutputDir)) {
 	throw "Expected build output directory '$buildOutputDir' was not created"
 }
 
-$executable = Get-ChildItem -Path $buildOutputDir -Filter 'otclient.exe' -Recurse | Select-Object -First 1
-
-if (-not $executable) {
-	throw "Unable to locate otclient.exe under '$buildOutputDir'"
-}
-
 if (Test-Path $runtimeStagingDir) {
 	Remove-Item -Path $runtimeStagingDir -Recurse -Force
 }
 
 New-Item -ItemType Directory -Path $runtimeStagingDir | Out-Null
+
+$executableSearchRoots = @($buildOutputDir, $clientDir)
+$executable = $null
+foreach ($searchRoot in $executableSearchRoots) {
+	if (Test-Path -LiteralPath $searchRoot) {
+		$executable = Get-ChildItem -Path $searchRoot -Filter 'otclient.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+		if ($executable) {
+			break
+		}
+	}
+}
+
+if (-not $executable) {
+	throw "Unable to locate otclient.exe under '$buildOutputDir' or '$clientDir'"
+}
 
 $runtimeDirectories = @('data', 'mods', 'modules', 'records')
 foreach ($dir in $runtimeDirectories) {
@@ -74,7 +83,6 @@ if (Test-Path $targetZip) {
 	Remove-Item -Path $targetZip -Force
 }
 
-$itemsToArchive = Get-ChildItem -Path $runtimeStagingDir
-Compress-Archive -Path $itemsToArchive -DestinationPath $targetZip -Force
+Compress-Archive -Path (Join-Path $runtimeStagingDir '*') -DestinationPath $targetZip -Force
 
 Write-Host "Packaged Windows client -> $targetZip"
