@@ -137,3 +137,8 @@ If something is not working, check the logs for the affected service:
 
 - 2026-03-24 - fix: enhance RSA key management and error handling in Docker setup; fix: improve executable search logic and streamline packaging process; Small update Tibia client expert Agent.; replace downloadnig place of otclient; feat: add CODEOWNERS to enforce reviews from @tresvitae; feat: Add frontend for Adventur
 
+
+### Client changes
+
+- [Client] 2026-03-24 - fix: enhance RSA key management and error handling in Docker setup; feat: Add frontend for Adventure OTS with highscores, login, registration, and online player features; docs: add detailed README files for AAC frontend, Nginx reverse proxy, and SQL initialization; chore: remove outdated GitHub workflows a
+
