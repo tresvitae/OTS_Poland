@@ -1,1 +1,19 @@
 pygame==2.5.2
+
+
+
+
+Zadanie Plan. Integrowanie procesu logowania do serwera przy uzyciu clienta, w uruchamiajac go i wpisujac wartosci, ktore są obecne w bazie danych np. name test i haslo test
+
+2. stowrz .devcontainer/devcontainer.json
+
+przeanalizuje Trasy logowania użytkownika i zapisz w test/api
+napisz Podstawowy formularz logowania frontend do testow w test/frontend dane uzytkownika sprawdz czy zostaly zapisane w bazie danych 
+
+- TF_LOG, TF_LOG_CORE, TF_LOG_PROVIDER
+- terraform force-unlock
+- terraform graph > graph.dot
+dot -Tpng graph.dot -o graph.png
+- terraform providers
+- depends-on meta argument
+- 
