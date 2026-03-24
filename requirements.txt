@@ -1,1 +1,10 @@
 pygame==2.5.2
+
+
+1 .agent api do komunikacji w projekcie (wymien uzywane narzedzia)
+testowania i debugowania aktualnej trasy logowania uzytkownika do serweru w /test/api
+dodaj komentarze opisujące użycie i parametry funkcji lub metod.
+
+Zadanie Plan. Integrowanie procesu logowania do serwera przy uzyciu clienta, w uruchamiajac go i wpisujac wartosci, ktore są obecne w bazie danych np. name test i haslo test
+
+2. stowrz .devcontainer/devcontainer.json
