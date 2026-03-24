@@ -16,7 +16,7 @@ $ErrorActionPreference = 'Stop'
 
 function Get-DefaultZipPath {
 	$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-	return Join-Path $repoRoot 'adventure-ots/aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip'
+	return Join-Path $repoRoot 'adventure-ots/frontend/public/downloads/windows/adventure-ots-client-windows.zip'
 }
 
 function Show-OtclientLog {

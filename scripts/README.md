@@ -4,7 +4,7 @@
 
 `scripts/test-client.ps1` verifies freshly packaged OTClient bundles without touching your local install:
 
-- Extracts `aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip` (or a custom `-ZipPath`) into `%TEMP%/otclient-test-*`.
+- Extracts `adventure-ots/frontend/public/downloads/windows/adventure-ots-client-windows.zip` (or a custom `-ZipPath`) into `%TEMP%/otclient-test-*`.
 - Prints OTClient startup diagnostics from `otclient.log` (GPU/OpenGL info, fatal module errors, and startup banner), including timeout/failure cases.
 - Accepts helper flags:
 	- `-EnableDebug` appends `--debug` to the client.

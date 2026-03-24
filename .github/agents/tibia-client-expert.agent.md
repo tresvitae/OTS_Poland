@@ -282,13 +282,13 @@ This script:
 2. Runs vcpkg install (CMake manifest mode)
 3. Compiles via cmake + Ninja
 4. Links statically (no DLL dependencies)
-5. Packages as `adventure-ots-client-windows.zip` in `aac-frontend/public/downloads/windows/`
+5. Packages as `adventure-ots-client-windows.zip` in `frontend/public/downloads/windows/`
 
 ### Build Output
 
 - **Executable**: `adventure-ots/client/build/windows-x86-release/otclient.exe` (23 MB static)
 - **Debug symbols**: `.pdb` file (separate, not packaged)
-- **Package**: `aac-frontend/public/downloads/windows/adventure-ots-client-windows.zip` (73 MB, includes data/)
+- **Package**: `frontend/public/downloads/windows/adventure-ots-client-windows.zip` (73 MB, includes data/)
 
 ### Distribution Path
 

@@ -38,6 +38,8 @@ services:
     restart: unless-stopped
     environment:
       LOG_LEVEL: info
+      TFS_KEY_FILE: /srv/keys/key.pem
+      TFS_EXPECTED_KEY_BITS: "1024"
     ports:
       - "7171:7171"
       - "7172:7172"
@@ -45,6 +47,7 @@ services:
       - ./tfs/config.lua:/srv/config.lua
       - ./tfs/data:/srv/data
       - ./tfs/schema.sql:/srv/schema.sql
+      - tfs_keys:/srv/keys
     depends_on:
       db:
         condition: service_healthy
@@ -138,6 +141,8 @@ services:
 
 volumes:
   db_data:
+    driver: local
+  tfs_keys:
     driver: local
 
 networks:
