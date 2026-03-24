@@ -5,12 +5,22 @@ $env:VCPKG_CMAKE_OPTIONS = '-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
 $env:VCPKG_CMAKE_CONFIGURE_OPTIONS = '-DCMAKE_POLICY_VERSION_MINIMUM=3.5'
 
 $vcVarsPath = 'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat'
-$clientDir = 'C:\Users\Admin\OTS_Poland\adventure-ots\client'
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+$clientDir = Join-Path $repoRoot 'adventure-ots\client'
+$websiteWorkspaceDir = Join-Path $repoRoot 'adventure-ots\frontend'
 $buildOutputDir = Join-Path $clientDir 'build\windows-x86-release'
 $runtimeStagingDir = Join-Path $buildOutputDir 'package-runtime'
-$downloadsDir = 'C:\Users\Admin\OTS_Poland\adventure-ots\aac-frontend\public\downloads\windows'
+$downloadsDir = Join-Path $websiteWorkspaceDir 'public\downloads\windows'
 $packageName = 'adventure-ots-client-windows.zip'
 $targetZip = Join-Path $downloadsDir $packageName
+
+if (-not (Test-Path -LiteralPath $clientDir)) {
+	throw "Client workspace not found at '$clientDir'."
+}
+
+if (-not (Test-Path -LiteralPath $websiteWorkspaceDir)) {
+	throw "Website workspace not found at '$websiteWorkspaceDir'."
+}
 
 $cmakeConfigure = 'cmake -S . -B build\windows-x86-release -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_STATIC_LIBRARY=ON -DOPTIONS_ENABLE_SCCACHE=OFF -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DVCPKG_HOST_TRIPLET=x86-windows-static'
 $cmakeBuild = 'cmake --build build\windows-x86-release -j4'
