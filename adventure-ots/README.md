@@ -88,6 +88,7 @@ Edit `tfs/config.lua`:
 - `serverName` — server name
 - `experienceStages` — experience stages
 - `mapName` — map name (without `.otbm`)
+- `ip` — for local Windows + Docker testing use `127.0.0.1` so character world connection resolves correctly
 
 The RSA key (`key.pem`) is generated automatically when the `gameserver` container starts, if the file does not exist or is corrupted. The private key is persisted in Docker volume `tfs_keys` to prevent unexpected login handshake breakage after container recreation.
 
@@ -175,10 +176,22 @@ Quick usage in GitHub Copilot Chat (VS Code):
 | Problem | Solution |
 |---------|----------|
 | TFS: "Connection refused" | DB is initializing — wait 30s, then `docker compose restart gameserver` |
+| Client: `Connection failed. (ERROR 10061)` on login | `gameserver` is offline/refusing 7171. Check `docker logs -f ots_engine` and fix startup errors in `tfs/config.lua` |
 | TFS: "Map not found" | Check `mapName` in `config.lua` vs files in `tfs/data/world/` |
+| TFS: `config.lua: unexpected symbol near '#'` | Use Lua comments (`--`) instead of shell comments (`#`) in `tfs/config.lua`, then restart `gameserver` |
 | TFS: "Missing RSA private key PEM header" | Remove old containers (`docker compose down`), optionally remove `tfs_keys` volume, and rebuild (`docker compose up -d --build`) |
 | Client: `ERROR 2` + `End of file` during login | Usually RSA handshake mismatch; recreate `tfs_keys` volume and restart `gameserver`, then retest |
 | Frontend: Blank page | `docker compose logs frontend` — check Next.js errors |
 | API: 500 error | `docker compose logs backend` — check DB connection |
 | Client: "Things not loaded" | Place `.spr`/`.dat` assets in `client/data/things/1098/` |
 | DB: Missing tables | `docker compose down -v && docker compose up -d --build` |
+
+## ✅ Login Incident Resolution Notes
+
+The March 2026 local login incident was resolved with three coordinated fixes:
+
+1. Stabilize and persist TFS RSA key (`tfs_keys` volume) and keep 10.98-compatible key size.
+2. Align OTClient `OTSERV_RSA` public key with the active server private key used by `gameserver`.
+3. Advertise local world IP via `ip = "127.0.0.1"` in `tfs/config.lua` for same-machine client/server testing.
+
+Validation outcome: login server handshake succeeds, character list loads, and world login proceeds when `ots_engine` is online.
