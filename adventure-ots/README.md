@@ -1,30 +1,30 @@
 # 🛡️ Adventure OTS — Docker Development Environment
 
-Kompletne środowisko deweloperskie do uruchomienia serwera Tibia OTS z użyciem Docker Compose.
+Complete development environment for running a Tibia OTS server using Docker Compose.
 
 ## 🏗️ Stack
 
-| Serwis | Kontener | Port | Opis |
-|--------|----------|------|------|
-| **MariaDB 10.11** | `ots_db` | `3306` | Baza danych |
-| **TFS 1.4.2** | `ots_engine` | `7171`, `7172` | Silnik gry |
-| **AAC Backend** | `aac_api` | `3001` (wewnętrzny) | API (Node.js + TypeScript) |
-| **AAC Frontend** | `aac_web` | `3000` (wewnętrzny) | Strona SPA (Next.js + Tailwind) |
+| Service | Container | Port | Description |
+|---------|-----------|------|-------------|
+| **MariaDB 10.11** | `ots_db` | `3306` | Database |
+| **TFS 1.4.2** | `ots_engine` | `7171`, `7172` | Game engine |
+| **AAC Backend** | `aac_api` | `3001` (internal) | API (Node.js + TypeScript) |
+| **AAC Frontend** | `aac_web` | `3000` (internal) | SPA website (Next.js + Tailwind) |
 | **Nginx** | `aac_proxy` | `80` | Reverse Proxy |
 
-## 📂 Struktura
+## 📂 Structure
 
 ```
 adventure-ots/
-├── docker-compose.yml          # Orkiestracja kontenerów
+├── docker-compose.yml          # Container orchestration
 ├── sql/
-│   └── 02_seed_data.sql        # Konto admina (1/1)
+│   └── 02_seed_data.sql        # Admin account (1/1)
 ├── tfs/
-│   ├── Dockerfile              # Budowa silnika z źródeł (Alpine)
-│   ├── config.lua              # Konfiguracja Docker
-│   ├── config.lua.dist         # Oryginalna konfiguracja
-│   ├── schema.sql              # Schemat bazy TFS
-│   └── data/                   # Dane gry (mapy, NPC, spelle...)
+│   ├── Dockerfile              # Build engine from source (Alpine)
+│   ├── config.lua              # Docker configuration
+│   ├── config.lua.dist         # Original configuration
+│   ├── schema.sql              # TFS database schema
+│   └── data/                   # Game data (maps, NPCs, spells…)
 ├── aac-backend/
 │   ├── Dockerfile              # Node.js 20 Alpine (multi-stage)
 │   ├── package.json            # Express, mysql2, JWT, Helmet
@@ -38,146 +38,146 @@ adventure-ots/
 │   └── nginx.conf              # Reverse proxy (/api → backend)
 └── client/
     ├── Dockerfile              # OTClient Mehah
-    ├── init.lua                # Punkt startowy (setUniqueServer)
-    └── data/things/            # ⚠️ Wymagane assety Tibia
+    ├── init.lua                # Entry point (setUniqueServer)
+    └── data/things/            # ⚠️ Required Tibia assets
 ```
 
-## 🚀 Szybki Start
+## 🚀 Quick Start
 
-### Wymagania
+### Requirements
 - Docker Desktop / Docker Engine + Docker Compose
-- Minimum **4 GB RAM** dla Dockera
-- Assety Tibia (`.spr`, `.dat`) dla protokołu **1098** w `client/data/things/1098/`
+- Minimum **4 GB RAM** for Docker
+- Tibia assets (`.spr`, `.dat`) for protocol **10.98** placed in `client/data/things/1098/`
 
-### Uruchomienie
+### Start
 
 ```bash
 cd adventure-ots
 docker compose up -d --build
 ```
 
-> ⏱️ Pierwsze uruchomienie: **5-15 minut** (kompilacja TFS z C++)
+> ⏱️ First run: **5–15 minutes** (TFS compilation from C++)
 
-### Dostęp
+### Access
 
-| Usługa | URL / Adres |
-|--------|-------------|
-| **Strona WWW (AAC)** | http://localhost |
+| Service | URL / Address |
+|---------|---------------|
+| **Website (AAC)** | http://localhost |
 | **API Backend** | http://localhost/api/health |
-| **Serwer gry** | `127.0.0.1:7171` (w kliencie) |
-| **Baza danych** | `localhost:3306` |
+| **Game server** | `127.0.0.1:7171` (in client) |
+| **Database** | `localhost:3306` |
 
-> ✅ **Status WWW:** Strona (AAC) działa poprawnie pod adresem `http://localhost`. Tworzenie nowych użytkowników i zapis do bazy danych funkcjonuje prawidłowo. Funkcjonalności te są w pełni dostępne po ponownym uruchomieniu (restarcie) kontenerów.
+> ✅ **Website status:** The AAC website works correctly at `http://localhost`. Creating new users and saving to the database works correctly. These features are fully available after a container restart.
 
-### Domyślne konto
+### Default account
 - **Login:** `1`
-- **Hasło:** `1`
-- **Postać:** `Admin` (GOD, level 100)
+- **Password:** `1`
+- **Character:** `Admin` (GOD, level 100)
 
-## 🔧 Konfiguracja
+## 🔧 Configuration
 
-### Baza danych
-Dane logowania (w `docker-compose.yml`):
+### Database
+Credentials (in `docker-compose.yml`):
 ```
-MYSQL_ROOT_PASSWORD: twoje_haslo
+MYSQL_ROOT_PASSWORD: your_password
 MYSQL_DATABASE: ots_baza
 ```
 
-### Silnik gry
-Edytuj `tfs/config.lua`:
-- `serverName` — nazwa serwera
-- `experienceStages` — etapy doświadczenia
-- `mapName` — nazwa mapy (bez `.otbm`)
+### Game engine
+Edit `tfs/config.lua`:
+- `serverName` — server name
+- `experienceStages` — experience stages
+- `mapName` — map name (without `.otbm`)
 
-RSA key (`key.pem`) jest teraz tworzony automatycznie przy starcie kontenera `gameserver`, jeśli plik nie istnieje lub jest uszkodzony.
+The RSA key (`key.pem`) is generated automatically when the `gameserver` container starts, if the file does not exist or is corrupted.
 
 ### AAC Backend
-Zmienne środowiskowe (w `docker-compose.yml`):
-- `JWT_SECRET` — zmień na losowy ciąg znaków w produkcji
-- `DB_*` — dane połączenia z bazą
+Environment variables (in `docker-compose.yml`):
+- `JWT_SECRET` — change to a random string in production
+- `DB_*` — database connection credentials
 
-### Klient
-W `client/init.lua`:
+### Client
+In `client/init.lua`:
 ```lua
 EnterGame.setUniqueServer("127.0.0.1", 7171, 1098)
 ```
 
-## 🛠️ Debugowanie
+## 🛠️ Debugging
 
 ```bash
-# Logi wszystkich serwisów
+# Logs for all services
 docker compose logs -f
 
-# Uruchomienie z profilem debug (dodatkowe narzędzia)
+# Start with debug profile (additional tools)
 docker compose --profile debug up -d
 
-# Logi konkretnego serwisu
+# Logs for a specific service
 docker compose logs -f aac-backend
 docker compose logs -f aac-frontend
 docker compose logs -f nginx
 docker compose logs -f gameserver
 docker compose logs -f db
 
-# Restart serwisu
+# Restart a service
 docker compose restart aac-backend
 
-# Połączenie z bazą
-docker compose exec db mysql -uroot -ptwoje_haslo ots_baza
+# Connect to the database
+docker compose exec db mysql -uroot -pyour_password ots_baza
 
-# Reset bazy (usunięcie danych)
+# Reset database (removes all data)
 docker compose down -v
 docker compose up -d --build
 ```
 
-### Profil debug (Docker Compose)
+### Debug profile (Docker Compose)
 
-W `docker-compose.yml` dodano dedykowany profil `debug`.
+A dedicated `debug` profile is defined in `docker-compose.yml`.
 
-- Serwis debug: `adminer` (`ots_adminer`)
-- Dostęp: http://localhost:8081
-- Serwer DB w Adminer: `db`
+- Debug service: `adminer` (`ots_adminer`)
+- Access: http://localhost:8081
+- DB server in Adminer: `db`
 
-Przykładowy start pełnego środowiska z narzędziami debug:
+Start the full environment with debug tools:
 
 ```bash
 docker compose up -d --build
 docker compose --profile debug up -d
 ```
 
-Wyłączenie narzędzi debug bez zatrzymywania głównych usług:
+Stop debug tools without stopping the main services:
 
 ```bash
 docker compose --profile debug down
 ```
 
-### Agent Debug (ulepszony)
+### Agent Debug (enhanced)
 
-Plik agenta: `.github/agents/debug.agent.md`
-Prompt slash-command: `.github/prompts/debug-ots.prompt.md`
+Agent file: `.github/agents/debug.agent.md`
+Slash-command prompt: `.github/prompts/debug-ots.prompt.md`
 
-Agent został rozszerzony o:
+The agent has been extended with:
 
-- workflow Docker-first (reprodukcja, logi, hipotezy, weryfikacja)
-- checklistę dla typowych problemów OTS (login, API, proxy, startup)
-- wymagane artefakty końcowe (dowód naprawy + brak regresji)
-- ustandaryzowany format raportu końcowego
+- Docker-first workflow (reproduce, logs, hypotheses, verification)
+- Checklist for common OTS problems (login, API, proxy, startup)
+- Required final artefacts (proof of fix + no regression)
+- Standardized final report format
 
-Ten tryb jest zalecany przy zgłoszeniach typu: `ERROR 2`, `500 API`, `Connection refused`, `Map not found`.
+This mode is recommended for issues such as: `ERROR 2`, `500 API`, `Connection refused`, `Map not found`.
 
-Szybkie użycie w GitHub Copilot Chat (VS Code):
+Quick usage in GitHub Copilot Chat (VS Code):
 
 ```text
-/debug-ots issue="Login ERROR 2 po wyborze postaci" context="konto Patryk/test, stack uruchomiony lokalnie"
+/debug-ots issue="Login ERROR 2 after character selection" context="account Patryk/test, stack running locally"
 ```
 
-## ⚠️ Częste problemy
+## ⚠️ Common issues
 
-| Problem | Rozwiązanie |
-|---------|-------------|
-| TFS: "Connection refused" | DB się inicjalizuje — poczekaj 30s, potem `docker compose restart gameserver` |
-| TFS: "Map not found" | Sprawdź `mapName` w `config.lua` vs pliki w `tfs/data/world/` |
-| TFS: "Missing RSA private key PEM header" | Usuń stare kontenery (`docker compose down`) i uruchom ponownie build (`docker compose up -d --build`) — kontener wygeneruje poprawny `key.pem` automatycznie |
-| AAC: Biała strona | `docker compose logs aac-frontend` — sprawdź błędy Next.js |
-| API: 500 error | `docker compose logs aac-backend` — sprawdź połączenie z DB |
-| Klient: "Things not loaded" | Umieść assety `.spr`/`.dat` w `client/data/things/1098/` |
-| DB: Brak tabel | `docker compose down -v && docker compose up -d --build` |
+| Problem | Solution |
+|---------|----------|
+| TFS: "Connection refused" | DB is initializing — wait 30s, then `docker compose restart gameserver` |
+| TFS: "Map not found" | Check `mapName` in `config.lua` vs files in `tfs/data/world/` |
+| TFS: "Missing RSA private key PEM header" | Remove old containers (`docker compose down`) and rebuild (`docker compose up -d --build`) — the container will regenerate `key.pem` automatically |
+| AAC: Blank page | `docker compose logs aac-frontend` — check Next.js errors |
+| API: 500 error | `docker compose logs aac-backend` — check DB connection |
+| Client: "Things not loaded" | Place `.spr`/`.dat` assets in `client/data/things/1098/` |
+| DB: Missing tables | `docker compose down -v && docker compose up -d --build` |

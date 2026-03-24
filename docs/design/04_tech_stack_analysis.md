@@ -15,9 +15,9 @@
 | **Protocol** | Tibia Protocol | **10.98** | Client ↔ server |
 | **Game Client** | OTClient Mehah | Latest | Player client (**market module OFF**) |
 | **Database** | MariaDB | 10.11 | Data store |
-| **Web Server** | Nginx | Latest | Reverse proxy + **HTTPS termination** |
-| **Web Runtime** | PHP | **8.2** | AAC backend |
-| **Web App** | MyAAC | Latest (1.x) | Account management (MVP website) |
+| **Web Server** | Nginx | Latest | Reverse proxy + static file serving for Next.js frontend |
+| **Backend API** | Node.js + TypeScript + Express | 20 LTS | Headless AAC REST API |
+| **Frontend SPA** | Next.js + Tailwind CSS | 14 | Dark Fantasy RPG website |
 | **TLS** | Let's Encrypt + Certbot | Latest | **Free HTTPS certificate** (auto-renew) |
 | **Scripting** | Lua | 5.2+ (bundled) | Game content |
 
@@ -40,7 +40,7 @@
 | **Protocol 10.98** | ✅ **Native support** | ❌ No 10.98 branch | ❌ Targets 12.x+ |
 | **Stability** | ✅ Official stable release | ⚠️ Discontinued base | ⚠️ Newer, less tested |
 | **Community scripts** | ✅ Enormous library | ❌ Minimal | ⚠️ Limited |
-| **MyAAC compatibility** | ✅ Native | ⚠️ Schema differs | ⚠️ Schema differs |
+| **Node.js API schema** | ✅ Direct SQL access | ⚠️ Schema differs | ⚠️ Schema differs |
 | **OTClient Mehah** | ✅ Confirmed working | ❓ Untested combo | ✅ Primary target |
 | **Datapack included** | ✅ Full | ❌ No datapack | ⚠️ Different format |
 | **MVP risk** | 🟢 Low | 🔴 **High** | 🟡 Medium |
@@ -64,10 +64,9 @@
 | TFS 1.4.2 | MariaDB 10.11 | ✅ | Drop-in MySQL replacement |
 | OTClient Mehah | Protocol 10.98 | ✅ | Confirmed on Otland |
 | OTClient Mehah | TFS 1.4.2 | ⚠️ | Market module → Canary only. **Turn it OFF** |
-| MyAAC | PHP 8.2 | ✅ | PHP 8.1+ required, 8.2 patches merged |
-| MyAAC | MariaDB 10.11 | ✅ | Works as MySQL replacement |
-| MyAAC | TFS 1.4.2 schema | ✅ | Native support |
-| Nginx | PHP 8.2 (php-fpm) | ✅ | Standard setup |
+| Node.js 20 + Express | MariaDB 10.11 | ✅ | Via mysql2 driver |
+| Next.js 14 | Node.js 20 | ✅ | Supported LTS combination |
+| Nginx | Node.js (reverse proxy) | ✅ | `/api` → backend, `/` → frontend |
 | Nginx | Let's Encrypt (Certbot) | ✅ | Free TLS cert, auto-renew every 90 days |
 
 ---
@@ -113,27 +112,36 @@ Market is a "Could" priority feature (FR-15.4). Not needed for MVP. Players trad
 services:
   gameserver:
     build:
-      context: ./server
+      context: ./tfs
     # TFS 1.4.2 pinned via git tag in Dockerfile
 
   database:
     image: mariadb:10.11       # pinned
 
-  web:
+  aac_api:
     build:
-      context: ./web
+      context: ./aac-backend
+    # Node.js 20 Alpine (multi-stage) pinned in Dockerfile
+
+  aac_web:
+    build:
+      context: ./aac-frontend
+    # Next.js 14 standalone (multi-stage) pinned in Dockerfile
+
+  proxy:
+    build:
+      context: ./nginx
     ports:
       - "80:80"
       - "443:443"             # HTTPS
     volumes:
       - letsencrypt:/etc/letsencrypt
-    # PHP 8.2-fpm + Nginx + Certbot pinned in Dockerfile
 
   certbot:
     image: certbot/certbot
     volumes:
       - letsencrypt:/etc/letsencrypt
-      - ./web/webroot:/var/www/certbot
+      - ./nginx/webroot:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h; done'"
 
   backup:
@@ -156,11 +164,36 @@ WORKDIR /srv/tfs/build
 RUN cmake .. && make -j$(nproc)
 ```
 
-**Dockerfile (Web):**
+**Dockerfile (Backend API):**
 ```dockerfile
-FROM php:8.2-fpm-alpine
-RUN docker-php-ext-install pdo_mysql mysqli
-COPY ./myaac /var/www/html
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+CMD ["node", "dist/index.js"]
+```
+
+**Dockerfile (Frontend SPA):**
+```dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/public ./public
+CMD ["node", "server.js"]
 ```
 
 ---
@@ -170,10 +203,10 @@ COPY ./myaac /var/www/html
 | # | Risk | Severity | Mitigation |
 |---|------|----------|------------|
 | R1 | Mehah market module crashes with TFS 1.4.2 | 🟡 Medium | **Disable it** — already decided |
-| R2 | RSA key mismatch (client ↔ server) | 🟡 Medium | Replace RSA keys on both sides during setup |
-| R3 | PHP 8.2 deprecation warnings in MyAAC | 🟢 Low | Known patches exist; non-blocking |
-| R4 | Missing Tibia.dat/Tibia.spr for 10.98 | 🟢 Low | Use verified 10.98 data files from community |
-| R5 | TFS compile fail on Ubuntu 24.04 | 🟢 Low | Build inside Docker; Ubuntu 24.04 confirmed working |
+| R2 | RSA key mismatch (client ↔ server) | 🟡 Medium | Auto-generated `key.pem` in gameserver container on first start if missing or corrupted |
+| R3 | Missing Tibia.dat/Tibia.spr for 10.98 | 🟢 Low | Use verified 10.98 data files from community |
+| R4 | TFS compile fail on Ubuntu 24.04 | 🟢 Low | Build inside Docker; Ubuntu 24.04 confirmed working |
+| R5 | JWT_SECRET left as default in production | 🟡 Medium | Change to a random string before public deployment |
 
 ---
 
@@ -204,12 +237,20 @@ COPY ./myaac /var/www/html
    └──────┬──────┘
           │
           ▼
-   ┌──────────────┐     ┌──────────────────┐     ┌──────────┐
-   │ MariaDB      │◄───►│ MyAAC (PHP 8.2)  │◄───►│ Certbot  │
-   │ 10.11        │     │ + Nginx          │     │ (LE TLS) │
-   └──────────────┘     └────────┬─────────┘     └──────────┘
-                                 │
-                         HTTPS :443 (+ :80 redirect)
-                                 │
-                           Player Browser
+   ┌──────────────┐     ┌────────────────┐     ┌────────────────┐
+   │ MariaDB      │◄───►│ Node.js API    │     │ Next.js 14     │
+   │ 10.11        │     │ (Express)      │     │ Frontend SPA   │
+   └──────────────┘     └───────┬────────┘     └───────┬────────┘
+                                │                      │
+                        ┌───────┴──────────────────────┘
+                        │
+                   ┌────▼──────────────────┐     ┌──────────┐
+                   │ Nginx (reverse proxy) │◄───►│ Certbot  │
+                   │ /api → backend        │     │ (LE TLS) │
+                   │ /    → frontend       │     └──────────┘
+                   └───────────┬───────────┘
+                               │
+                       HTTPS :443 (+ :80 redirect)
+                               │
+                         Player Browser
 ```
