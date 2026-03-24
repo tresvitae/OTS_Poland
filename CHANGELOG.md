@@ -10,3 +10,8 @@
 - Summary: Added and refined debugging/logging support across client and scripts to improve troubleshooting.
 - Summary: Updated agent and workflow setup, including new scripts and prompt/configuration improvements.
 
+
+### 2026-03-24
+
+- 2026-03-24 - fix: enhance RSA key management and error handling in Docker setup; fix: improve executable search logic and streamline packaging process; Small update Tibia client expert Agent.; replace downloadnig place of otclient; feat: add CODEOWNERS to enforce reviews from @tresvitae; feat: Add frontend for Adventur
+
