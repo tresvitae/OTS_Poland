@@ -89,7 +89,7 @@ Edit `tfs/config.lua`:
 - `experienceStages` — experience stages
 - `mapName` — map name (without `.otbm`)
 
-The RSA key (`key.pem`) is generated automatically when the `gameserver` container starts, if the file does not exist or is corrupted.
+The RSA key (`key.pem`) is generated automatically when the `gameserver` container starts, if the file does not exist or is corrupted. The private key is persisted in Docker volume `tfs_keys` to prevent unexpected login handshake breakage after container recreation.
 
 ### Backend API
 Environment variables (in `docker-compose.yml`):
@@ -176,7 +176,8 @@ Quick usage in GitHub Copilot Chat (VS Code):
 |---------|----------|
 | TFS: "Connection refused" | DB is initializing — wait 30s, then `docker compose restart gameserver` |
 | TFS: "Map not found" | Check `mapName` in `config.lua` vs files in `tfs/data/world/` |
-| TFS: "Missing RSA private key PEM header" | Remove old containers (`docker compose down`) and rebuild (`docker compose up -d --build`) — the container will regenerate `key.pem` automatically |
+| TFS: "Missing RSA private key PEM header" | Remove old containers (`docker compose down`), optionally remove `tfs_keys` volume, and rebuild (`docker compose up -d --build`) |
+| Client: `ERROR 2` + `End of file` during login | Usually RSA handshake mismatch; recreate `tfs_keys` volume and restart `gameserver`, then retest |
 | Frontend: Blank page | `docker compose logs frontend` — check Next.js errors |
 | API: 500 error | `docker compose logs backend` — check DB connection |
 | Client: "Things not loaded" | Place `.spr`/`.dat` assets in `client/data/things/1098/` |

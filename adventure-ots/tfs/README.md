@@ -60,8 +60,9 @@ Because `config.lua` and `data/` are bind-mounted, content/config changes are re
 Container entrypoint:
 
 - Runs `docker-entrypoint.sh`
-- Validates `/srv/key.pem`
-- Generates fresh 2048-bit RSA private key if missing/invalid
+- Validates persisted RSA key at `/srv/keys/key.pem`
+- Regenerates a 1024-bit RSA private key if missing/invalid or incompatible
+- Creates `/srv/key.pem` symlink for TFS runtime compatibility
 - Starts server process with `exec /bin/tfs`
 
 ## Build System Notes
@@ -175,7 +176,18 @@ docker compose restart gameserver
 
 5. Key.pem issues
 	- Entrypoint auto-generates key when invalid/missing.
+	- Key is persisted in Docker volume `tfs_keys` to avoid rotation on container recreation.
 	- Check logs for key generation message.
+
+6. OTClient login error `ERROR 2` / `End of file`
+	- This usually indicates RSA handshake mismatch (not wrong credentials).
+	- Ensure the server key is stable and 1024-bit (required for this 10.98 setup).
+	- Recreate key volume and restart if needed:
+	```bash
+	docker compose down
+	docker volume rm adventure-ots_tfs_keys
+	docker compose up -d --build gameserver
+	```
 
 ## Security and Operations Notes
 
