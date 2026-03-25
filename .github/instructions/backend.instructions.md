@@ -1,12 +1,12 @@
 ---
 name: Backend Development
 description: "Node.js + TypeScript + Express REST API for Adventure OTS. Use when: implementing API routes, adding database queries, configuring JWT authentication, debugging backend services, or connecting to MariaDB. Covers: Express routes, TypeScript conventions, TFS 1.4.2 schema compatibility, JWT patterns, error handling."
-applyTo: "adventure-ots/aac-backend/**"
+applyTo: "adventure-ots/backend/**"
 ---
 
 # Backend Development Guidelines (Node.js + TypeScript + Express)
 
-**Location**: `adventure-ots/aac-backend/`
+**Location**: `adventure-ots/backend/`
 
 This is a headless REST API built with Express + TypeScript that directly interfaces with the TFS 1.4.2 MariaDB schema. All routes must use JWT authentication and return consistent JSON responses.
 
@@ -15,7 +15,7 @@ This is a headless REST API built with Express + TypeScript that directly interf
 ## 🚀 Quick Start
 
 ```bash
-cd adventure-ots/aac-backend
+cd adventure-ots/backend
 
 # Development server with hot-reload (ts-node)
 npm run dev    # Listens on http://localhost:3001 (or configured PORT)
@@ -32,7 +32,7 @@ npm start
 ## 📂 Directory Structure
 
 ```
-aac-backend/
+backend/
 ├── src/
 │   ├── index.ts          # Express app setup, middleware, port config
 │   ├── db.ts             # MariaDB connection pool (connects to 'db' hostname)
@@ -294,9 +294,9 @@ curl http://localhost:3001/api/newfeature
 
 ### 4. Hot-Reload in Docker
 ```bash
-docker compose restart aac_api
+docker compose restart backend
 # or use docker-compose logs to verify changes
-docker logs -f aac_api
+docker logs -f backend
 ```
 
 ---
@@ -312,8 +312,8 @@ npm start          # Run from /dist
 ### Docker Build
 ```bash
 cd adventure-ots
-docker compose up -d --build aac_api
-docker logs -f aac_api
+docker compose up -d --build backend
+docker logs -f backend
 ```
 
 ### Health Check
@@ -331,7 +331,7 @@ Requires local MariaDB or Docker database:
 # Start only database
 docker compose up -d db
 
-# In aac-backend, configure .env
+# In backend, configure .env
 DB_HOST=127.0.0.1
 DB_USER=tibia_user
 DB_PASSWORD=your_password
@@ -346,7 +346,7 @@ npm run dev
 
 ## ⚠️ Environment Variables
 
-Create `.env` file (or `.env.local`) in `aac-backend/`:
+Create `.env` file (or `.env.local`) in `backend/`:
 ```env
 # Database
 DB_HOST=db                    # Docker: db, Local: localhost

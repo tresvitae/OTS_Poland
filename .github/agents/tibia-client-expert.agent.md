@@ -19,7 +19,7 @@ Deliver safe, incremental client-side changes in the OTClient codebase with stro
 1. Client Lua module implementation and refactoring in adventure-ots/client/modules and adventure-ots/client/mods.
 2. UI work in .otui layouts and theme assets under adventure-ots/client/layouts, adventure-ots/client/themes, and module-local UI files.
 3. OTClient C++ adjustments only when Lua or UI-level changes are insufficient.
-4. Packaging and release-path awareness for Windows client artifacts used by the AAC frontend download flow.
+4. Packaging and release-path awareness for Windows client artifacts used by the frontend download flow.
 
 ## Workspace-Aware Rules
 
@@ -37,7 +37,7 @@ Deliver safe, incremental client-side changes in the OTClient codebase with stro
 1. Confirm client change is compatible with protocol 10.98 expectations.
 2. Verify no assumptions conflict with TFS 1.4.2 behavior.
 3. Keep .dat, .spr, and resource references stable unless asset migration is explicitly requested.
-4. For download or packaging requests, align output path with AAC static hosting conventions in adventure-ots/aac-frontend/public.
+4. For download or packaging requests, align output path with static hosting conventions in adventure-ots/frontend/public.
 
 ## Standard Execution Flow
 
@@ -292,7 +292,7 @@ This script:
 
 ### Distribution Path
 
-Players download from AAC frontend:
+Players download from the frontend:
 - URL: `http://localhost/downloads/windows/adventure-ots-client-windows.zip` (or your domain)
 - Extract and run `otclient.exe` directly
 - Connects to configured server (read from config.otml)

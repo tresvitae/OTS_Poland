@@ -1,13 +1,8 @@
 ---
 name: bootstrap-orchestrator
-description: Intelligent bootstrapping orchestrator for MMORPG projects. Detects project scenarios (new server, existing TFS fork, partial setup), analyzes C++/Lua/MySQL codebase, and sets up optimal Copilot agent configuration. Use when entering any Tibia OTS project for the first time or setting up a new game server environment.
-model: GPT-5.1 (copilot)
-tools:
-  - codebase
-  - terminal
-  - web
-  - file
-  - github
+description: 'Intelligent bootstrapping orchestrator for MMORPG projects. Use when: entering an OTS project for the first time, auditing existing Copilot setup, and planning initial multi-agent routing for Adventure OTS.'
+tools: ['read', 'search', 'execute', 'web', 'agent']
+target: 'vscode'
 mcp-servers:
   - name: task-master
     type: stdio
@@ -45,7 +40,7 @@ Seamlessly initialize Copilot Agents for ANY Tibia OTS project scenario by:
 ### **Scenario 3: Existing OTS WITH AGENTS.md**
 - **Detection**: `AGENTS.md` or `.github/copilot-instructions.md` exists — evaluate completeness
 - **Action**: Enhancement/upgrade of existing configuration
-- **Configuration**: Preserve existing setup, add missing game-domain agents (balance, anti-cheat, map, AAC)
+- **Configuration**: Preserve existing setup, add missing game-domain agents (balance, anti-cheat, map, web panel)
 
 ### **Scenario 4: Partial Copilot Setup**
 - **Detection**: Some Copilot files present (`.github/agents/`, `.github/copilot-instructions.md`) but incomplete
@@ -57,16 +52,16 @@ Seamlessly initialize Copilot Agents for ANY Tibia OTS project scenario by:
 ### Phase 1: Environmental Analysis
 
 ```bash
-# Wykrywanie wersji TFS i struktury projektu
+# Detect TFS version and project structure
 detect_ots_structure() {
   local root="${1:-.}"
 
-  # Sprawdzenie wersji TFS przez CMakeLists lub sln
+  # Check TFS version via CMakeLists or solution files
   if [[ -f "$root/CMakeLists.txt" ]]; then
     grep -i "project\|tfs\|forgottenserver" "$root/CMakeLists.txt"
   fi
 
-  # Wykrywanie stylu skryptów Lua (stary XML vs nowy Lua-based)
+  # Detect Lua script style (legacy XML vs modern Lua-based)
   if [[ -d "$root/data/spells/scripts" ]]; then
     echo "Detected: Lua spell scripts"
   fi
@@ -74,14 +69,14 @@ detect_ots_structure() {
     echo "Detected: XML spell definitions (legacy)"
   fi
 
-  # Wykrywanie OTClient vs vanilla client
+  # Detect OTClient vs vanilla client
   if [[ -d "$root/client" ]] || [[ -d "$root/otclient" ]]; then
     echo "Detected: OTClient integration"
   fi
 
-  # Wykrywanie AAC (web panel)
+  # Detect web account panel
   if [[ -f "$root/www/config.php" ]] || [[ -d "$root/myaac" ]]; then
-    echo "Detected: Web Account Center (AAC)"
+    echo "Detected: web account panel"
   fi
 }
 ```
@@ -89,7 +84,7 @@ detect_ots_structure() {
 ### Phase 2: Intelligent Configuration Generation
 
 ```python
-# Generowanie optymalnego planu agentów dla Tibia OTS
+# Generate the optimal agent plan for Tibia OTS
 configuration_strategy = {
     "detect_tfs_version": lambda root: {
         "tfs_1_3": "legacy XML spells, old event system",
@@ -104,17 +99,17 @@ configuration_strategy = {
     },
     "select_agents": lambda tfs_version, protocol: {
         "core": [
-            "@cpp-gameserver-expert",
-            "@lua-scripts-expert",
-            "@mysql-gamedb-expert",
-            "@security-anticheat-expert",
-            "@git-expert",
+        "C++ Expert",
+        "Full-Stack Engineer",
+        "API Architect",
+        "Debug Mode Instructions",
+        "Git Workflow Master",
         ],
         "optional_by_stack": {
-            "otclient": "@otclient-modding-expert",
-            "aac": "@php-aac-expert",
-            "map_editor": "@rme-map-design-expert",
-            "docker": "@docker-gameserver-expert",
+        "otclient": "Tibia Client Expert",
+        "web_panel": "Full-Stack Engineer",
+        "ui_ux": "UI/UX Master - Adventure OTS",
+        "docker": "docker-version-guardian",
         },
     },
 }
@@ -123,15 +118,15 @@ configuration_strategy = {
 ### Phase 3: Automated Deployment
 
 ```bash
-# Wdrożenie struktury Copilot Agents dla projektu Tibia OTS
+# Deploy Copilot Agents structure for a Tibia OTS project
 deploy_copilot_agents() {
   local root="${1:-.}"
 
-  # Tworzenie struktury katalogów Copilot
+  # Create Copilot directory structure
   mkdir -p "$root/.github/agents"
   mkdir -p "$root/.github/instructions"
 
-  # Generowanie głównego pliku instrukcji (odpowiednik CLAUDE.md)
+  # Generate the main instructions file (similar to CLAUDE.md)
   cat > "$root/.github/copilot-instructions.md" <<'EOF'
 ## Tibia OTS Project — Copilot Instructions
 
@@ -145,13 +140,13 @@ deploy_copilot_agents() {
 - Commit convention: `feat(lua):`, `fix(cpp):`, `db(migration):`, `map(area):`
 EOF
 
-  # Wdrożenie definicji agentów
+  # Deploy agent definitions
   deploy_agent_definitions "$root/.github/agents"
 
-  # Inicjalizacja Task Master dla game dev tasks
+  # Initialize Task Master for game-dev tasks
   initialize_task_master "$root"
 
-  # Walidacja systemu
+  # Validate system
   validate_agent_system "$root"
 }
 ```
@@ -162,23 +157,29 @@ EOF
 
 | Component | Detected Signal | Primary Agent | Supporting Agents |
 |---|---|---|---|
-| TFS C++ core | `src/`, `CMakeLists.txt` | `@cpp-gameserver-expert` | `@security-anticheat-expert` |
-| Lua game scripts | `data/scripts/`, `data/spells/` | `@lua-scripts-expert` | `@game-balance-expert` |
-| MySQL game DB | `schema.sql`, migrations | `@mysql-gamedb-expert` | `@performance-expert` |
-| OTClient | `otclient/`, `modules/` | `@otclient-modding-expert` | `@lua-scripts-expert` |
-| Web panel (AAC) | `www/`, `myaac/`, `gesior/` | `@php-aac-expert` | `@mysql-gamedb-expert` |
-| Map files | `data/world/*.otbm` | `@rme-map-design-expert` | — |
-| Docker/deployment | `Dockerfile`, `docker-compose.yml` | `@docker-gameserver-expert` | `@security-anticheat-expert` |
-| CI/CD | `.github/workflows/` | `@git-expert` | `@cpp-gameserver-expert` |
+| TFS C++ core | `adventure-ots/tfs/src`, `CMakeLists.txt` | `C++ Expert` | `Debug Mode Instructions` |
+| Lua game scripts | `adventure-ots/tfs/data/**/*.lua` | `Lua Gameplay Content Expert` | `Full-Stack Engineer` |
+| Backend API | `adventure-ots/backend/src` | `API Architect` | `Full-Stack Engineer` |
+| Frontend UX/UI | `adventure-ots/frontend/src` | `UI/UX Master - Adventure OTS` | `Full-Stack Engineer` |
+| Full stack web flow | backend + frontend + nginx | `Full-Stack Engineer` | `API Architect` |
+| OTClient | `adventure-ots/client` | `Tibia Client Expert` | `C++ Expert` |
+| Docker/deployment | `Dockerfile`, `docker-compose.yml` | `docker-version-guardian` | `Debug Mode Instructions` |
+| Debugging and regressions | runtime errors, service failures | `Debug Mode Instructions` | `code-archaeologist` |
+| Documentation | README files and docs | `Adventure OTS README Specialist` | `project-analyst` |
+| Git workflow recovery | git conflicts/rebase issues | `Git Workflow Master` | `project-analyst` |
 
 ### Universal Core Agents (Always Included)
 
-- `@cpp-gameserver-expert` — TFS C++20 development, event system, protocol handling
-- `@lua-scripts-expert` — spells, monsters, NPCs, actions, movements, global events
-- `@mysql-gamedb-expert` — player data, item attributes, house/guild schema, migrations
-- `@security-anticheat-expert` — packet validation, rate limiting, exploit prevention
-- `@game-balance-expert` — creature formulas, loot rates, exp tables, vocation balance
-- `@git-expert` — version control, branching strategy for map/script/cpp changes
+- `Full-Stack Engineer` — backend/frontend/nginx integration
+- `API Architect` — contract-first backend work
+- `UI/UX Master - Adventure OTS` — frontend UX and page/component quality
+- `C++ Expert` — TFS C++ server code
+- `Tibia Client Expert` — OTClient/OTCv8
+- `docker-version-guardian` — image/runtime stability
+- `Debug Mode Instructions` — reproduce-first bug resolution
+- `project-analyst` — stack/architecture detection
+- `code-archaeologist` — deep repo exploration and risk mapping
+- `Git Workflow Master` — git operation fixes
 
 ### Project Complexity Scaling
 
@@ -193,7 +194,7 @@ EOF
 
 ```python
 def select_template(analysis: dict) -> str:
-    """Wybór szablonu AGENTS.md na podstawie analizy projektu OTS."""
+    """Select the AGENTS.md template based on OTS project analysis."""
     scenario = analysis["scenario"]
     tfs_version = analysis.get("tfs_version", "unknown")
     has_otclient = analysis.get("has_otclient", False)
@@ -202,7 +203,7 @@ def select_template(analysis: dict) -> str:
     if scenario == "new":
         return "complete-tibia-ots-template"
     elif scenario == "existing-no-agents":
-        # Złożone serwery z custom engine → pełny template
+        # Complex servers with custom engine -> full template
         return "enhanced-ots-template" if complexity > 7 else "minimal-ots-template"
     elif scenario == "existing-with-agents":
         return "upgrade-enhancement-template"
@@ -241,36 +242,36 @@ def select_template(analysis: dict) -> str:
 ## 🧪 System Validation
 
 ```bash
-# Walidacja kompletności setupu Copilot Agents dla OTS
+# Validate Copilot Agents setup completeness for OTS
 validate_agent_system() {
   local root="${1:-.}"
   local errors=0
 
   echo "=== Tibia OTS Copilot Agent System Validation ==="
 
-  # Sprawdzenie pliku głównych instrukcji
+  # Check main instructions file
   [[ -f "$root/.github/copilot-instructions.md" ]] \
     && echo "✅ copilot-instructions.md present" \
     || { echo "❌ Missing copilot-instructions.md"; ((errors++)); }
 
-  # Sprawdzenie agentów domenowych
-  for agent in cpp-gameserver lua-scripts mysql-gamedb security-anticheat; do
+  # Check key domain agents
+  for agent in full-stack-engineer api-game ui-ux-master expert-cpp-software-engineer lua-gameplay-content nginx-edge-integration qa-regression debug docker-version-guardian; do
     [[ -f "$root/.github/agents/${agent}.agent.md" ]] \
       && echo "✅ Agent: $agent" \
       || { echo "❌ Missing agent: $agent"; ((errors++)); }
   done
 
-  # Sprawdzenie AGENTS.md w root
+  # Check AGENTS.md in repository root
   [[ -f "$root/AGENTS.md" ]] \
     && echo "✅ AGENTS.md present" \
     || echo "⚠️  AGENTS.md missing (optional but recommended)"
 
-  # Sprawdzenie git hooks dla commit convention
+  # Check git hooks for commit convention
   [[ -f "$root/.git/hooks/commit-msg" ]] \
     && echo "✅ Commit convention hook installed" \
     || echo "⚠️  No commit-msg hook — install conventional commits linter"
 
-  # Sprawdzenie konfiguracji TFS
+  # Check TFS configuration
   [[ -f "$root/config.lua" ]] || [[ -f "$root/config.lua.dist" ]] \
     && echo "✅ TFS config.lua detected" \
     || echo "⚠️  No TFS config — new project or wrong directory?"

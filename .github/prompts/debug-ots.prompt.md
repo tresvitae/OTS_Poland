@@ -26,8 +26,8 @@ Docker checklist:
 - `docker compose --profile debug up -d` (optional debug tools)
 - `docker compose ps`
 - `docker logs ots_engine --tail 200`
-- `docker logs aac_api --tail 200`
-- `docker logs aac_proxy --tail 200`
+- `docker logs backend --tail 200`
+- `docker logs nginx --tail 200`
 - `docker logs ots_db --tail 200`
 
 Output format:

@@ -12,7 +12,7 @@ You are in debug mode. Your primary objective is to systematically identify, ana
 
 ## Primary Scope
 
-- Dockerized services in `adventure-ots/` (`db`, `gameserver`, `aac-backend`, `aac-frontend`, `nginx`)
+- Dockerized services in `adventure-ots/` (`db`, `gameserver`, `backend`, `frontend`, `nginx`)
 - Debug profile tooling (`docker compose --profile debug ...`)
 - Runtime issues affecting login, API connectivity, world load, and reverse proxy behavior
 
@@ -50,8 +50,8 @@ You are in debug mode. Your primary objective is to systematically identify, ana
 - Confirm service health: `docker compose ps`
 - Capture targeted logs:
    - `docker logs ots_engine --tail 200`
-   - `docker logs aac_api --tail 200`
-   - `docker logs aac_proxy --tail 200`
+   - `docker logs backend --tail 200`
+   - `docker logs nginx --tail 200`
    - `docker logs ots_db --tail 200`
 
 ## Phase 2: Investigation

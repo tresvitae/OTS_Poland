@@ -18,8 +18,8 @@ This repository is a Tibia OTS stack (Protocol 10.98) with Dockerized components
 
 - `adventure-ots/tfs/` - The Forgotten Server 1.4.2 (C++ engine + Lua data)
 - `adventure-ots/sql/` - SQL seed data for bootstrap
-- `adventure-ots/aac-backend/` - Node.js + TypeScript + Express API
-- `adventure-ots/aac-frontend/` - Next.js 14 + Tailwind frontend
+- `adventure-ots/backend/` - Node.js + TypeScript + Express API
+- `adventure-ots/frontend/` - Next.js 14 + Tailwind frontend
 - `adventure-ots/nginx/` - Reverse proxy and download routing
 - `adventure-ots/client/` - OTClient files and configuration
 - `adventure-ots/docker-compose.yml` - service orchestration
