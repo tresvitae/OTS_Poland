@@ -123,7 +123,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 ❌ **Assign all tasks to one agent** – Defeats parallelization  
 ❌ **>2 agents in parallel** – Causes context thrashing  
 ❌ **Skip dependency analysis** – Backend must complete before frontend integration  
-❌ **Use wrong agent names** – exact spelling required (e.g., `tailwind-ots-expert` not `tailwind-expert`)  
+❌ **Use wrong agent names** – exact spelling required (e.g., `UI/UX Master - Adventure OTS`, not shortened variants)  
 ❌ **Implement code yourself** – Violates orchestrator principle  
 
 ## Tips

@@ -161,7 +161,7 @@ EOF
 | TFS C++ core | `adventure-ots/tfs/src`, `CMakeLists.txt` | `C++ Expert` | `Debug Mode Instructions` |
 | Lua game scripts | `adventure-ots/tfs/data/**/*.lua` | `project-analyst` | `Full-Stack Engineer` |
 | Backend API | `adventure-ots/backend/src` | `API Architect` | `Full-Stack Engineer` |
-| Frontend UX/UI | `adventure-ots/frontend/src` | `UI/UX Master - Adventure OTS` | `tailwind-ots-expert` |
+| Frontend UX/UI | `adventure-ots/frontend/src` | `UI/UX Master - Adventure OTS` | `Full-Stack Engineer` |
 | Full stack web flow | backend + frontend + nginx | `Full-Stack Engineer` | `API Architect` |
 | OTClient | `adventure-ots/client` | `Tibia Client Expert` | `C++ Expert` |
 | Docker/deployment | `Dockerfile`, `docker-compose.yml` | `docker-version-guardian` | `Debug Mode Instructions` |
