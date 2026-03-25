@@ -1,7 +1,6 @@
 ---
 name: bootstrap-orchestrator
 description: 'Intelligent bootstrapping orchestrator for MMORPG projects. Use when: entering an OTS project for the first time, auditing existing Copilot setup, and planning initial multi-agent routing for Adventure OTS.'
-model: 'gpt-5'
 tools: ['read', 'search', 'execute', 'web', 'agent']
 target: 'vscode'
 mcp-servers:
@@ -53,16 +52,16 @@ Seamlessly initialize Copilot Agents for ANY Tibia OTS project scenario by:
 ### Phase 1: Environmental Analysis
 
 ```bash
-# Wykrywanie wersji TFS i struktury projektu
+# Detect TFS version and project structure
 detect_ots_structure() {
   local root="${1:-.}"
 
-  # Sprawdzenie wersji TFS przez CMakeLists lub sln
+  # Check TFS version via CMakeLists or solution files
   if [[ -f "$root/CMakeLists.txt" ]]; then
     grep -i "project\|tfs\|forgottenserver" "$root/CMakeLists.txt"
   fi
 
-  # Wykrywanie stylu skryptów Lua (stary XML vs nowy Lua-based)
+  # Detect Lua script style (legacy XML vs modern Lua-based)
   if [[ -d "$root/data/spells/scripts" ]]; then
     echo "Detected: Lua spell scripts"
   fi
@@ -70,12 +69,12 @@ detect_ots_structure() {
     echo "Detected: XML spell definitions (legacy)"
   fi
 
-  # Wykrywanie OTClient vs vanilla client
+  # Detect OTClient vs vanilla client
   if [[ -d "$root/client" ]] || [[ -d "$root/otclient" ]]; then
     echo "Detected: OTClient integration"
   fi
 
-  # Wykrywanie panelu webowego
+  # Detect web account panel
   if [[ -f "$root/www/config.php" ]] || [[ -d "$root/myaac" ]]; then
     echo "Detected: web account panel"
   fi
@@ -85,7 +84,7 @@ detect_ots_structure() {
 ### Phase 2: Intelligent Configuration Generation
 
 ```python
-# Generowanie optymalnego planu agentów dla Tibia OTS
+# Generate the optimal agent plan for Tibia OTS
 configuration_strategy = {
     "detect_tfs_version": lambda root: {
         "tfs_1_3": "legacy XML spells, old event system",
@@ -119,15 +118,15 @@ configuration_strategy = {
 ### Phase 3: Automated Deployment
 
 ```bash
-# Wdrożenie struktury Copilot Agents dla projektu Tibia OTS
+# Deploy Copilot Agents structure for a Tibia OTS project
 deploy_copilot_agents() {
   local root="${1:-.}"
 
-  # Tworzenie struktury katalogów Copilot
+  # Create Copilot directory structure
   mkdir -p "$root/.github/agents"
   mkdir -p "$root/.github/instructions"
 
-  # Generowanie głównego pliku instrukcji (odpowiednik CLAUDE.md)
+  # Generate the main instructions file (similar to CLAUDE.md)
   cat > "$root/.github/copilot-instructions.md" <<'EOF'
 ## Tibia OTS Project — Copilot Instructions
 
@@ -141,13 +140,13 @@ deploy_copilot_agents() {
 - Commit convention: `feat(lua):`, `fix(cpp):`, `db(migration):`, `map(area):`
 EOF
 
-  # Wdrożenie definicji agentów
+  # Deploy agent definitions
   deploy_agent_definitions "$root/.github/agents"
 
-  # Inicjalizacja Task Master dla game dev tasks
+  # Initialize Task Master for game-dev tasks
   initialize_task_master "$root"
 
-  # Walidacja systemu
+  # Validate system
   validate_agent_system "$root"
 }
 ```
@@ -159,7 +158,7 @@ EOF
 | Component | Detected Signal | Primary Agent | Supporting Agents |
 |---|---|---|---|
 | TFS C++ core | `adventure-ots/tfs/src`, `CMakeLists.txt` | `C++ Expert` | `Debug Mode Instructions` |
-| Lua game scripts | `adventure-ots/tfs/data/**/*.lua` | `project-analyst` | `Full-Stack Engineer` |
+| Lua game scripts | `adventure-ots/tfs/data/**/*.lua` | `Lua Gameplay Content Expert` | `Full-Stack Engineer` |
 | Backend API | `adventure-ots/backend/src` | `API Architect` | `Full-Stack Engineer` |
 | Frontend UX/UI | `adventure-ots/frontend/src` | `UI/UX Master - Adventure OTS` | `Full-Stack Engineer` |
 | Full stack web flow | backend + frontend + nginx | `Full-Stack Engineer` | `API Architect` |
@@ -195,7 +194,7 @@ EOF
 
 ```python
 def select_template(analysis: dict) -> str:
-    """Wybór szablonu AGENTS.md na podstawie analizy projektu OTS."""
+    """Select the AGENTS.md template based on OTS project analysis."""
     scenario = analysis["scenario"]
     tfs_version = analysis.get("tfs_version", "unknown")
     has_otclient = analysis.get("has_otclient", False)
@@ -204,7 +203,7 @@ def select_template(analysis: dict) -> str:
     if scenario == "new":
         return "complete-tibia-ots-template"
     elif scenario == "existing-no-agents":
-        # Złożone serwery z custom engine → pełny template
+        # Complex servers with custom engine -> full template
         return "enhanced-ots-template" if complexity > 7 else "minimal-ots-template"
     elif scenario == "existing-with-agents":
         return "upgrade-enhancement-template"
@@ -243,36 +242,36 @@ def select_template(analysis: dict) -> str:
 ## 🧪 System Validation
 
 ```bash
-# Walidacja kompletności setupu Copilot Agents dla OTS
+# Validate Copilot Agents setup completeness for OTS
 validate_agent_system() {
   local root="${1:-.}"
   local errors=0
 
   echo "=== Tibia OTS Copilot Agent System Validation ==="
 
-  # Sprawdzenie pliku głównych instrukcji
+  # Check main instructions file
   [[ -f "$root/.github/copilot-instructions.md" ]] \
     && echo "✅ copilot-instructions.md present" \
     || { echo "❌ Missing copilot-instructions.md"; ((errors++)); }
 
-  # Sprawdzenie agentów domenowych
-  for agent in cpp-gameserver lua-scripts mysql-gamedb security-anticheat; do
+  # Check key domain agents
+  for agent in full-stack-engineer api-game ui-ux-master expert-cpp-software-engineer lua-gameplay-content nginx-edge-integration qa-regression debug docker-version-guardian; do
     [[ -f "$root/.github/agents/${agent}.agent.md" ]] \
       && echo "✅ Agent: $agent" \
       || { echo "❌ Missing agent: $agent"; ((errors++)); }
   done
 
-  # Sprawdzenie AGENTS.md w root
+  # Check AGENTS.md in repository root
   [[ -f "$root/AGENTS.md" ]] \
     && echo "✅ AGENTS.md present" \
     || echo "⚠️  AGENTS.md missing (optional but recommended)"
 
-  # Sprawdzenie git hooks dla commit convention
+  # Check git hooks for commit convention
   [[ -f "$root/.git/hooks/commit-msg" ]] \
     && echo "✅ Commit convention hook installed" \
     || echo "⚠️  No commit-msg hook — install conventional commits linter"
 
-  # Sprawdzenie konfiguracji TFS
+  # Check TFS configuration
   [[ -f "$root/config.lua" ]] || [[ -f "$root/config.lua.dist" ]] \
     && echo "✅ TFS config.lua detected" \
     || echo "⚠️  No TFS config — new project or wrong directory?"
