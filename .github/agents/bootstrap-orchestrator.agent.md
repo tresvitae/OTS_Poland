@@ -1,13 +1,9 @@
 ---
 name: bootstrap-orchestrator
-description: Intelligent bootstrapping orchestrator for MMORPG projects. Detects project scenarios (new server, existing TFS fork, partial setup), analyzes C++/Lua/MySQL codebase, and sets up optimal Copilot agent configuration. Use when entering any Tibia OTS project for the first time or setting up a new game server environment.
-model: GPT-5.1 (copilot)
-tools:
-  - codebase
-  - terminal
-  - web
-  - file
-  - github
+description: 'Intelligent bootstrapping orchestrator for MMORPG projects. Use when: entering an OTS project for the first time, auditing existing Copilot setup, and planning initial multi-agent routing for Adventure OTS.'
+model: 'gpt-5'
+tools: ['read', 'search', 'execute', 'web', 'agent']
+target: 'vscode'
 mcp-servers:
   - name: task-master
     type: stdio
@@ -104,17 +100,17 @@ configuration_strategy = {
     },
     "select_agents": lambda tfs_version, protocol: {
         "core": [
-            "@cpp-gameserver-expert",
-            "@lua-scripts-expert",
-            "@mysql-gamedb-expert",
-            "@security-anticheat-expert",
-            "@git-expert",
+        "C++ Expert",
+        "Full-Stack Engineer",
+        "API Architect",
+        "Debug Mode Instructions",
+        "Git Workflow Master",
         ],
         "optional_by_stack": {
-            "otclient": "@otclient-modding-expert",
-            "web_panel": "@php-web-panel-expert",
-            "map_editor": "@rme-map-design-expert",
-            "docker": "@docker-gameserver-expert",
+        "otclient": "Tibia Client Expert",
+        "web_panel": "Full-Stack Engineer",
+        "ui_ux": "UI/UX Master - Adventure OTS",
+        "docker": "docker-version-guardian",
         },
     },
 }
@@ -162,23 +158,29 @@ EOF
 
 | Component | Detected Signal | Primary Agent | Supporting Agents |
 |---|---|---|---|
-| TFS C++ core | `src/`, `CMakeLists.txt` | `@cpp-gameserver-expert` | `@security-anticheat-expert` |
-| Lua game scripts | `data/scripts/`, `data/spells/` | `@lua-scripts-expert` | `@game-balance-expert` |
-| MySQL game DB | `schema.sql`, migrations | `@mysql-gamedb-expert` | `@performance-expert` |
-| OTClient | `otclient/`, `modules/` | `@otclient-modding-expert` | `@lua-scripts-expert` |
-| Web panel | `www/`, `myaac/`, `gesior/` | `@php-web-panel-expert` | `@mysql-gamedb-expert` |
-| Map files | `data/world/*.otbm` | `@rme-map-design-expert` | — |
-| Docker/deployment | `Dockerfile`, `docker-compose.yml` | `@docker-gameserver-expert` | `@security-anticheat-expert` |
-| CI/CD | `.github/workflows/` | `@git-expert` | `@cpp-gameserver-expert` |
+| TFS C++ core | `adventure-ots/tfs/src`, `CMakeLists.txt` | `C++ Expert` | `Debug Mode Instructions` |
+| Lua game scripts | `adventure-ots/tfs/data/**/*.lua` | `project-analyst` | `Full-Stack Engineer` |
+| Backend API | `adventure-ots/backend/src` | `API Architect` | `Full-Stack Engineer` |
+| Frontend UX/UI | `adventure-ots/frontend/src` | `UI/UX Master - Adventure OTS` | `tailwind-ots-expert` |
+| Full stack web flow | backend + frontend + nginx | `Full-Stack Engineer` | `API Architect` |
+| OTClient | `adventure-ots/client` | `Tibia Client Expert` | `C++ Expert` |
+| Docker/deployment | `Dockerfile`, `docker-compose.yml` | `docker-version-guardian` | `Debug Mode Instructions` |
+| Debugging and regressions | runtime errors, service failures | `Debug Mode Instructions` | `code-archaeologist` |
+| Documentation | README files and docs | `Adventure OTS README Specialist` | `project-analyst` |
+| Git workflow recovery | git conflicts/rebase issues | `Git Workflow Master` | `project-analyst` |
 
 ### Universal Core Agents (Always Included)
 
-- `@cpp-gameserver-expert` — TFS C++20 development, event system, protocol handling
-- `@lua-scripts-expert` — spells, monsters, NPCs, actions, movements, global events
-- `@mysql-gamedb-expert` — player data, item attributes, house/guild schema, migrations
-- `@security-anticheat-expert` — packet validation, rate limiting, exploit prevention
-- `@game-balance-expert` — creature formulas, loot rates, exp tables, vocation balance
-- `@git-expert` — version control, branching strategy for map/script/cpp changes
+- `Full-Stack Engineer` — backend/frontend/nginx integration
+- `API Architect` — contract-first backend work
+- `UI/UX Master - Adventure OTS` — frontend UX and page/component quality
+- `C++ Expert` — TFS C++ server code
+- `Tibia Client Expert` — OTClient/OTCv8
+- `docker-version-guardian` — image/runtime stability
+- `Debug Mode Instructions` — reproduce-first bug resolution
+- `project-analyst` — stack/architecture detection
+- `code-archaeologist` — deep repo exploration and risk mapping
+- `Git Workflow Master` — git operation fixes
 
 ### Project Complexity Scaling
 
