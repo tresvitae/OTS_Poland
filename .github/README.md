@@ -116,4 +116,6 @@ Recommended phased retirement:
 
 - Workspace instructions: `.github/copilot-instructions.md`
 - Authoring guidance for agents: `.github/instructions/agents.instructions.md`
+- Nginx edge routing guidance: `.github/instructions/nginx-edge.instructions.md`
+- QA regression guidance: `.github/instructions/qa-regression.instructions.md`
 - Context and structure guidance: `.github/instructions/context-engineering.instructions.md`

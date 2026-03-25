@@ -22,8 +22,8 @@ Use this matrix to choose the right specialization quickly.
 |------|---------------|---------------------|
 | Backend API, DB query, auth flow | `Full-Stack Engineer` | `.github/instructions/backend.instructions.md` |
 | Frontend page/component UX work | `UI/UX Master - Adventure OTS` | `.github/instructions/frontend.instructions.md` |
-| Nginx proxy and edge routing changes | `Nginx Edge Integration Expert` | `.github/instructions/context-engineering.instructions.md` |
-| QA and regression validation | `QA Regression Guard` | `.github/instructions/context-engineering.instructions.md` |
+| Nginx proxy and edge routing changes | `Nginx Edge Integration Expert` | `.github/instructions/nginx-edge.instructions.md` |
+| QA and regression validation | `QA Regression Guard` | `.github/instructions/qa-regression.instructions.md` |
 | Docker image/runtime stability | `docker-version-guardian` | `.github/instructions/containerization-docker-best-practices.instructions.md` |
 | TFS Lua gameplay scripts | `Lua Gameplay Content Expert` | `.github/instructions/lua-scripts.instructions.md` |
 | TFS C++ server changes | `C++ Expert` | `.github/instructions/cpp-server.instructions.md` |
