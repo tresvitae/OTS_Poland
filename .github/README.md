@@ -16,26 +16,37 @@ This directory contains Copilot customization assets for Adventure OTS:
 - `skills/`: Skill packs with focused workflows
 - `copilot-instructions.md`: Always-on workspace routing guidance
 
-## Primary Agents
+## Agent Status
 
-- `docker-version-guardian.agent.md`
-	- Docker and runtime reproducibility guard for `Dockerfile*` and compose changes.
+### Core
 
 - `full-stack-engineer.agent.md`
-	- Full-stack implementation for `adventure-ots/backend`, `adventure-ots/frontend`, and nginx-aware integrations.
-
+- `api-game.agent.md`
 - `ui-ux-master.agent.md`
-	- Primary UI and UX specialist for frontend architecture, usability, accessibility, and interaction quality.
+- `docker-version-guardian.agent.md`
+- `debug.agent.md`
+- `expert-cpp-software-engineer.agent.md`
+- `tibia-client-expert.agent.md`
+- `lua-gameplay-content.agent.md`
+- `nginx-edge-integration.agent.md`
+- `qa-regression.agent.md`
+- `tech-lead-orchestrator.agent.md`
 
-- `tailwind-css-expert.agent.md`
-	- Compatibility shim for legacy Tailwind workflows.
-	- Prefer `ui-ux-master.agent.md` for new work.
+### Optional
+
+- `project-analyst.agent.md`
+- `code-archeologist.agent.md`
+- `readme.agent.md`
+- `git-workflow-master.agent.md`
+
+### Deprecated
+
+- `bootstrap-orchestrator.agent.md` (retire for day-to-day work; keep only for first-time bootstrap)
 
 ## Orchestrators
 
 - `bootstrap-orchestrator.agent.md`
-	- First-entry setup and bootstrap planner.
-	- Detects project state and proposes initial agent-routing strategy.
+	- First-entry setup and bootstrap planner (deprecated for regular feature work).
 
 - `tech-lead-orchestrator.agent.md`
 	- Delegation-only coordinator for multi-component tasks.
@@ -45,12 +56,31 @@ This directory contains Copilot customization assets for Adventure OTS:
 	- Implementation-first coordinator with selective delegation.
 	- Handles backend/frontend/nginx flow and hands off specialist subtasks when needed.
 
+## Task-to-Agent Matrix
+
+| Task | Preferred Agent |
+|------|------------------|
+| End-to-end backend/frontend feature | `full-stack-engineer.agent.md` |
+| Backend API contract and route design | `api-game.agent.md` |
+| Frontend UX and component architecture | `ui-ux-master.agent.md` |
+| Lua gameplay scripts (spells/NPC/actions/events) | `lua-gameplay-content.agent.md` |
+| Nginx proxy and edge behavior | `nginx-edge-integration.agent.md` |
+| Regression and smoke validation | `qa-regression.agent.md` |
+| Docker image/runtime stability | `docker-version-guardian.agent.md` |
+| Runtime debugging and incident triage | `debug.agent.md` |
+| TFS C++ server code | `expert-cpp-software-engineer.agent.md` |
+| OTClient/OTCv8 work | `tibia-client-expert.agent.md` |
+| Documentation only | `readme.agent.md` |
+| Git workflow issues | `git-workflow-master.agent.md` |
+
 ## Delegation Map (Current Workspace)
 
 - Full stack web delivery: `full-stack-engineer.agent.md`
 - API contract-heavy work: `api-game.agent.md`
 - Frontend UX architecture: `ui-ux-master.agent.md`
-- Legacy Tailwind-only requests: `tailwind-css-expert.agent.md`
+- Lua gameplay content: `lua-gameplay-content.agent.md`
+- Nginx edge and proxy integration: `nginx-edge-integration.agent.md`
+- QA and regression validation: `qa-regression.agent.md`
 - Docker/runtime stability: `docker-version-guardian.agent.md`
 - Reproduce-first debugging: `debug.agent.md`
 - TFS C++ server changes: `expert-cpp-software-engineer.agent.md`
@@ -66,6 +96,14 @@ This directory contains Copilot customization assets for Adventure OTS:
 - Nginx: `adventure-ots/nginx/nginx.conf`
 
 Use backend/frontend naming consistently in all new customizations.
+
+## Migration Note: Retiring bootstrap-orchestrator
+
+Recommended phased retirement:
+1. Keep `bootstrap-orchestrator.agent.md` only for first-time repository setup and initial Copilot bootstrapping.
+2. Use `tech-lead-orchestrator.agent.md` for planning and delegation in ongoing development.
+3. Use `full-stack-engineer.agent.md` for day-to-day implementation and specialist handoff.
+4. Avoid routing normal feature/debug tasks through bootstrap once project baseline is established.
 
 ## Working Model
 

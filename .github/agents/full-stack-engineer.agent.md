@@ -52,6 +52,9 @@ When task scope requires specialist depth, delegate and orchestrate:
 - Use `UI/UX Master - Adventure OTS` for advanced frontend UX architecture work.
 - Use `docker-version-guardian` when Docker/image/runtime stability is the primary concern.
 - Use `API Architect` for API-first design deep dives and contract-heavy work.
+- Use `Lua Gameplay Content Expert` for gameplay scripts under `adventure-ots/tfs/data`.
+- Use `Nginx Edge Integration Expert` for proxy, edge routing, headers, and timeout changes.
+- Use `QA Regression Guard` for post-change validation and regression evidence.
 
 Delegate only when specialization materially improves quality or speed.
 

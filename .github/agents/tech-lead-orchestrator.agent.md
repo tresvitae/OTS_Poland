@@ -41,7 +41,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 - [Estimated complexity: low/medium/high]
 
 ### SubAgent Assignments
-**Task 1**: [description] → AGENT: tailwind-ots-expert (component building)
+**Task 1**: [description] → AGENT: UI/UX Master - Adventure OTS
 **Task 2**: [description] → AGENT: [exact-agent-name]
 **Task 3**: [description] → AGENT: [exact-agent-name]
 [continue...]
@@ -55,9 +55,11 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 ### Available Agents for This Project
 - `Full-Stack Engineer`: backend/frontend/nginx implementation coordinator
 - `UI/UX Master - Adventure OTS`: frontend UX and component architecture
-- `tailwind-ots-expert`: compatibility path for legacy Tailwind requests
 - `API Architect`: API-first backend contract and implementation
 - `Debug Mode Instructions`: reproduce-first diagnostics and bug fixing
+- `Lua Gameplay Content Expert`: TFS Lua gameplay scripting
+- `Nginx Edge Integration Expert`: nginx edge/proxy behavior
+- `QA Regression Guard`: post-change regression validation
 - `C++ Expert`: TFS C++ server changes
 - `Tibia Client Expert`: OTClient/OTCv8 client changes
 - `docker-version-guardian`: Docker image/runtime stability
@@ -78,11 +80,13 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 
 | Task Type | Best Agent | Fallback |
 |-----------|-----------|----------|
-| UI/Tailwind styling | UI/UX Master - Adventure OTS | tailwind-ots-expert |
+| UI/Tailwind styling | UI/UX Master - Adventure OTS | Full-Stack Engineer |
 | Backend API design | API Architect | Full-Stack Engineer |
 | Frontend component logic | UI/UX Master - Adventure OTS | Full-Stack Engineer |
-| Game content (Lua) | Full-Stack Engineer (for routing) | project-analyst |
+| Game content (Lua) | Lua Gameplay Content Expert | Full-Stack Engineer |
 | Database/migrations | API Architect | Full-Stack Engineer |
+| Nginx proxy/edge | Nginx Edge Integration Expert | Full-Stack Engineer |
+| Regression validation | QA Regression Guard | Debug Mode Instructions |
 | Code audit/refactor | code-archaeologist | project-analyst |
 | Stack detection | project-analyst | code-archaeologist |
 
@@ -98,7 +102,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 **Task 1**: Design backend inventory API endpoints → AGENT: API Architect
 **Task 2**: Build inventory UI component + styling → AGENT: UI/UX Master - Adventure OTS
 **Task 3**: Implement drag-drop logic and integration states → AGENT: Full-Stack Engineer
-**Task 4**: Investigate gameplay scripting impact and routing plan → AGENT: project-analyst
+**Task 4**: Implement gameplay script impact changes → AGENT: Lua Gameplay Content Expert
 
 ### Execution Strategy
 - **Parallel (Phase 1)**: Tasks 1 & 2 (API design + UI composition—independent)
@@ -107,7 +111,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 
 ### Delegation Checklist
 - [ ] Task 1 assigned (backend API design)
-- [ ] Task 2 assigned to tailwind-ots-expert
+- [ ] Task 2 assigned to UI/UX Master - Adventure OTS
 - [ ] Task 3 assigned (drag-drop implementation)
 - [ ] Task 4 assigned (game content)
 - [ ] All sequential dependencies documented
@@ -126,5 +130,5 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 
 - **Skim system context for agents** – Available agents listed in prompt attachment
 - **Document unknowns** – Mark tasks as "pending" if no specialist agent exists yet
-- **Reuse specialists** – Same agent can handle multiple sequential tasks (e.g., tailwind-ots-expert for all UI components)
+- **Reuse specialists** – Same agent can handle multiple sequential tasks (e.g., UI/UX Master - Adventure OTS for UI components)
 - **OTS-specific paths** – Always use full paths: `adventure-ots/frontend/src/components/...`
