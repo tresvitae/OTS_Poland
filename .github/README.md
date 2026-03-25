@@ -21,7 +21,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - `docker-version-guardian.agent.md`
 	- Docker and runtime reproducibility guard for `Dockerfile*` and compose changes.
 
-- `aac-fullstack-typescript-engineer.agent.md`
+- `full-stack-engineer.agent.md`
 	- Full-stack implementation for `adventure-ots/backend`, `adventure-ots/frontend`, and nginx-aware integrations.
 
 - `ui-ux-master.agent.md`
@@ -37,7 +37,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - Frontend: `adventure-ots/frontend`
 - Nginx: `adventure-ots/nginx/nginx.conf`
 
-Legacy mentions of `aac-backend` and `aac-frontend` should be treated as old naming.
+Use backend/frontend naming consistently in all new customizations.
 
 ## Working Model
 

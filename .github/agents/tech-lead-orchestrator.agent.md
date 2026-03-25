@@ -70,7 +70,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 | Task Type | Best Agent | Fallback |
 |-----------|-----------|----------|
 | UI/Tailwind styling | tailwind-ots-expert | (none—specialized) |
-| Backend API design | backend-developer or aac-backend-specialist | (if exists) |
+| Backend API design | backend-developer or backend-specialist | (if exists) |
 | Frontend component logic | react-specialist or frontend-developer | (if exists) |
 | Game content (Lua) | game-content-specialist or content-agent | (if exists) |
 | Database/migrations | integration-agent | (generic) |
@@ -118,4 +118,4 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 - **Skim system context for agents** – Available agents listed in prompt attachment
 - **Document unknowns** – Mark tasks as "pending" if no specialist agent exists yet
 - **Reuse specialists** – Same agent can handle multiple sequential tasks (e.g., tailwind-ots-expert for all UI components)
-- **OTS-specific paths** – Always use full paths: `adventure-ots/aac-frontend/src/components/...`
+- **OTS-specific paths** – Always use full paths: `adventure-ots/frontend/src/components/...`

@@ -45,7 +45,7 @@ Seamlessly initialize Copilot Agents for ANY Tibia OTS project scenario by:
 ### **Scenario 3: Existing OTS WITH AGENTS.md**
 - **Detection**: `AGENTS.md` or `.github/copilot-instructions.md` exists — evaluate completeness
 - **Action**: Enhancement/upgrade of existing configuration
-- **Configuration**: Preserve existing setup, add missing game-domain agents (balance, anti-cheat, map, AAC)
+- **Configuration**: Preserve existing setup, add missing game-domain agents (balance, anti-cheat, map, web panel)
 
 ### **Scenario 4: Partial Copilot Setup**
 - **Detection**: Some Copilot files present (`.github/agents/`, `.github/copilot-instructions.md`) but incomplete
@@ -79,9 +79,9 @@ detect_ots_structure() {
     echo "Detected: OTClient integration"
   fi
 
-  # Wykrywanie AAC (web panel)
+  # Wykrywanie panelu webowego
   if [[ -f "$root/www/config.php" ]] || [[ -d "$root/myaac" ]]; then
-    echo "Detected: Web Account Center (AAC)"
+    echo "Detected: web account panel"
   fi
 }
 ```
@@ -112,7 +112,7 @@ configuration_strategy = {
         ],
         "optional_by_stack": {
             "otclient": "@otclient-modding-expert",
-            "aac": "@php-aac-expert",
+            "web_panel": "@php-web-panel-expert",
             "map_editor": "@rme-map-design-expert",
             "docker": "@docker-gameserver-expert",
         },
@@ -166,7 +166,7 @@ EOF
 | Lua game scripts | `data/scripts/`, `data/spells/` | `@lua-scripts-expert` | `@game-balance-expert` |
 | MySQL game DB | `schema.sql`, migrations | `@mysql-gamedb-expert` | `@performance-expert` |
 | OTClient | `otclient/`, `modules/` | `@otclient-modding-expert` | `@lua-scripts-expert` |
-| Web panel (AAC) | `www/`, `myaac/`, `gesior/` | `@php-aac-expert` | `@mysql-gamedb-expert` |
+| Web panel | `www/`, `myaac/`, `gesior/` | `@php-web-panel-expert` | `@mysql-gamedb-expert` |
 | Map files | `data/world/*.otbm` | `@rme-map-design-expert` | — |
 | Docker/deployment | `Dockerfile`, `docker-compose.yml` | `@docker-gameserver-expert` | `@security-anticheat-expert` |
 | CI/CD | `.github/workflows/` | `@git-expert` | `@cpp-gameserver-expert` |

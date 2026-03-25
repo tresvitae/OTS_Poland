@@ -20,7 +20,7 @@ Use this matrix to choose the right specialization quickly.
 
 | Task | Primary Agent | Primary Instruction |
 |------|---------------|---------------------|
-| Backend API, DB query, auth flow | `AAC Full-Stack TypeScript Engineer` | `.github/instructions/backend.instructions.md` |
+| Backend API, DB query, auth flow | `Full-Stack Engineer` | `.github/instructions/backend.instructions.md` |
 | Frontend page/component UX work | `UI/UX Master - Adventure OTS` | `.github/instructions/frontend.instructions.md` |
 | Tailwind legacy workflows | `tailwind-ots-expert` (compatibility) | `.github/instructions/frontend.instructions.md` |
 | Docker image/runtime stability | `docker-version-guardian` | `.github/instructions/containerization-docker-best-practices.instructions.md` |
@@ -36,7 +36,7 @@ Use this matrix to choose the right specialization quickly.
 - TFS C++: `adventure-ots/tfs/src`
 - TFS Lua: `adventure-ots/tfs/data`
 
-If older docs mention `aac-backend` or `aac-frontend`, treat those as legacy naming.
+Use backend/frontend naming consistently in new documentation and agent prompts.
 
 ## Key Development Rules
 

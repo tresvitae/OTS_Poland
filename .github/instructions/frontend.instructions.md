@@ -1,12 +1,12 @@
 ---
 name: Frontend Development
 description: "Next.js 14 + Tailwind CSS web frontend (Dark Fantasy RPG theme). Use when: building React components, creating pages, styling with Tailwind, connecting to backend API, debugging UI/UX, or configuring Next.js. Covers: App Router, component structure, Tailwind conventions, API client patterns, environment setup."
-applyTo: "adventure-ots/aac-frontend/**"
+applyTo: "adventure-ots/frontend/**"
 ---
 
 # Frontend Development Guidelines (Next.js 14 + Tailwind CSS)
 
-**Location**: `adventure-ots/aac-frontend/`
+**Location**: `adventure-ots/frontend/`
 
 This is a modern React frontend using Next.js 14 App Router with Tailwind CSS. It connects to the Node.js backend API and implements a Dark Fantasy RPG theme.
 
@@ -15,7 +15,7 @@ This is a modern React frontend using Next.js 14 App Router with Tailwind CSS. I
 ## 🚀 Quick Start
 
 ```bash
-cd adventure-ots/aac-frontend
+cd adventure-ots/frontend
 
 # Development server with hot-reload
 npm run dev    # Listens on http://localhost:3000
@@ -32,7 +32,7 @@ npm start
 ## 📂 Directory Structure
 
 ```
-aac-frontend/
+frontend/
 ├── src/
 │   ├── app/                    # Next.js 14 App Router (pages & layouts)
 │   │   ├── layout.tsx          # Root layout (shared HTML structure)
@@ -482,8 +482,8 @@ npm start          # Serve from .next/ directory
 ### Docker Build
 ```bash
 cd adventure-ots
-docker compose up -d --build aac_web
-docker logs -f aac_web
+docker compose up -d --build frontend
+docker logs -f frontend
 ```
 
 ### Verifying Frontend
@@ -496,7 +496,7 @@ curl http://localhost/api/health  # Should return backend API response
 
 ## ⚠️ Environment Variables
 
-Create `.env.local` in `aac-frontend/`:
+Create `.env.local` in `frontend/`:
 ```env
 # Backend API
 NEXT_PUBLIC_API_URL=/api    # Relative to frontend (proxied by Nginx/dev server)
