@@ -5,9 +5,15 @@ This folder contains integration tests for Adventure OTS AAC API.
 The tests validate:
 - public API availability (`/api/health`, `/api/online`)
 - account registration and login
+- login route success/failure cases with parameterized credentials
 - character creation flow
 - persistence check through list endpoint (`/api/account/characters`)
 - request validation errors
+- account persistence constraints (`name` and `email` duplicates)
+
+Login route analysis is documented in:
+
+- `test/api/login_routes_analysis.md`
 
 ## Prerequisites
 
@@ -31,12 +37,14 @@ From repository root:
 ```bash
 python -m pip install pytest
 API_BASE_URL=http://localhost/api pytest -q test/api/test_aac_api.py
+API_BASE_URL=http://localhost/api pytest -q test/api/test_login_routes.py
 ```
 
 Alternative (direct backend port, without nginx):
 
 ```bash
 API_BASE_URL=http://localhost:3001/api pytest -q test/api/test_aac_api.py
+API_BASE_URL=http://localhost:3001/api pytest -q test/api/test_login_routes.py
 ```
 
 ## Parameters
@@ -54,6 +62,7 @@ Example:
 
 ```bash
 API_BASE_URL=http://localhost/api API_TEST_TIMEOUT=12 pytest -q test/api/test_aac_api.py
+API_BASE_URL=http://localhost/api API_TEST_TIMEOUT=12 pytest -q test/api/test_login_routes.py
 ```
 
 ## Notes
