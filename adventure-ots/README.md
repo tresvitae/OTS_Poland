@@ -135,7 +135,10 @@ docker compose restart backend
 # Connect to the database
 docker compose exec db mysql -uroot -pyour_password ots_baza
 
-# Reset database (removes all data)
+# Re-apply DB seed on existing volume (safe, recommended)
+docker compose exec -T db sh -lc 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < sql/02_seed_data.sql
+
+# Reset database (removes all data, fallback)
 docker compose down -v
 docker compose up -d --build
 ```
