@@ -48,8 +48,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libluajit-5.1-2 \
   libmariadb3 \
   openssl \
+  gosu \
   libpugixml1v5 \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system tfs \
+  && useradd --system --gid tfs --home-dir /srv --shell /usr/sbin/nologin tfs \
+  && mkdir -p /srv/keys \
+  && chown -R tfs:tfs /srv
 
 COPY --from=build /usr/src/forgottenserver/build/tfs /bin/tfs
 COPY data /srv/data/
