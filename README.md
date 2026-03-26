@@ -1,144 +1,56 @@
-# Adventure OTS
-# OTS_Poland
+# Adventure OTS Documentation Index
 
+This root README is the central navigation page for all README files in this repository.
 
-# 🛡️ Tibia OTS Project - MVP (Protocol 10.98)
+For platform startup and runtime details, start with:
 
-System for managing and deploying a Tibia Open Source (OTS) server based on **Docker** container architecture.
+- [adventure-ots/README.md](adventure-ots/README.md)
 
-## 🏗️ System Architecture (Stack)
+## Service and Runtime READMEs
 
-* **Game Engine:** The Forgotten Server (TFS) 1.4.2
-* **Database:** MariaDB 10.11 (LTS)
-* **Backend API:** Node.js + TypeScript + Express
-* **Frontend SPA:** Next.js 14 + Tailwind CSS (Dark Fantasy RPG)
-* **Reverse Proxy:** Nginx
-* **Orchestration:** Docker Compose
+- [adventure-ots/README.md](adventure-ots/README.md)
+- [adventure-ots/backend/README.md](adventure-ots/backend/README.md)
+- [adventure-ots/frontend/README.md](adventure-ots/frontend/README.md)
+- [adventure-ots/nginx/README.md](adventure-ots/nginx/README.md)
+- [adventure-ots/sql/README.md](adventure-ots/sql/README.md)
+- [adventure-ots/tfs/README.md](adventure-ots/tfs/README.md)
+- [adventure-ots/client/README.md](adventure-ots/client/README.md)
 
----
+## Client Data and Packaging READMEs
 
-## 📂 Project Structure
+- [adventure-ots/client/data/sounds/README.md](adventure-ots/client/data/sounds/README.md)
+- [adventure-ots/client/data/things/README.md](adventure-ots/client/data/things/README.md)
+- [adventure-ots/client/records/README.md](adventure-ots/client/records/README.md)
+- [adventure-ots/frontend/public/downloads/windows/README.md](adventure-ots/frontend/public/downloads/windows/README.md)
 
-```text
-.
-├── adventure-ots/
-│   ├── docker-compose.yml     # Main orchestration file
-│   ├── sql/                   # Seed data (admin account)
-│   ├── tfs/                   # Game engine (src, data, config.lua, schema.sql)
-│   ├── backend/               # REST API (Node.js + TypeScript)
-│   ├── frontend/              # SPA website (Next.js + Tailwind CSS)
-│   ├── nginx/                 # Reverse Proxy
-│   └── client/                # Configured OTClient Mehah
-├── src/                       # Project scripts
-├── docs/                      # Documentation
-└── deploy/                    # Deployment configuration
+## Project and Operations READMEs
 
-```
+- [deploy/README.md](deploy/README.md)
+- [docs/README.md](docs/README.md)
+- [docs/design/README.md](docs/design/README.md)
+- [evals/README.md](evals/README.md)
+- [scripts/README.md](scripts/README.md)
 
----
+## Source and Agent READMEs
 
-## 🚀 Quick Start (First Run)
+- [src/README.md](src/README.md)
+- [src/agents/README.md](src/agents/README.md)
+- [src/graph/README.md](src/graph/README.md)
 
-### 1. Prerequisites
+## Test READMEs
 
-Make sure you have the following installed:
+- [test/README.md](test/README.md)
+- [test/api/README.md](test/api/README.md)
+- [test/frontend/README.md](test/frontend/README.md)
 
-* Docker Desktop (Windows/Mac) or Docker Engine (Linux).
-* Minimum 4 GB RAM allocated to Docker.
+## GitHub Automation and Skills READMEs
 
-### 2. Required Assets
+- [.github/README.md](.github/README.md)
+- [.github/hooks/README.md](.github/hooks/README.md)
+- [.github/skills/README.md](.github/skills/README.md)
 
-Before the first run, place the Tibia **10.98** asset files in the client directory:
+## Notes
 
-```
-adventure-ots/client/data/things/1098/
-  ├── Tibia.spr    # Sprite sheet (protocol 10.98)
-  └── Tibia.dat    # Object definitions (protocol 10.98)
-```
-
-> ⚠️ **Missing these files** will cause the game client to display a "Things not loaded" error. Obtain verified 10.98 data files from the OTLand community.
-
-### 3. Start
-
-Open a terminal in the `adventure-ots` folder and run:
-
-```bash
-docker compose up -d --build
-```
-
-> ⏱️ *First run takes 5–15 minutes (C++ engine compilation).*
->
-> ℹ️ The RSA key (`key.pem`) is generated automatically in the `gameserver` container at `tfs/key.pem` when the container starts, if the file does not exist or is corrupted.
-
-### 4. Access
-
-| Service | URL / Address |
-| --- | --- |
-| **Website** | http://localhost |
-| **API Health Check** | http://localhost/api/health |
-| **Game server** | `127.0.0.1:7171` (in client) |
-
-### Default account
-- **Login:** `1`
-- **Password:** `1`
-- **Character:** `Admin` (GOD, level 100)
-
----
-
-## 🤖 Instructions for LangChain Agents
-
-If you use AI agents for project development, pass them these guidelines:
-
-1. **Context:** This project is a microservices system in Docker containers. Lua script changes → `/tfs/data`. API changes → `/backend/src`. UI changes → `/frontend/src`.
-2. **Database:** Schema changes must be reflected in `tfs/schema.sql`. The backend connects directly to TFS tables.
-3. **Connectivity:** All services communicate over the internal Docker network (hostname: `db`).
-4. **Auth:** The backend uses JWT; passwords are stored as SHA1 hashes (compatible with TFS 1.4.2).
-
----
-
-## 🛠️ Debugging & Logs
-
-If something is not working, check the logs for the affected service:
-
-| Problem | Command |
-| --- | --- |
-| **Engine not starting** | `docker logs ots_engine` |
-| **API errors** | `docker logs api` |
-| **Website errors** | `docker logs web` |
-| **Proxy issues** | `docker logs proxy` |
-| **Database issues** | `docker logs ots_db` |
-
-### Common errors:
-
-* **"Connection refused" (TFS):** The database is still initializing. Wait 30 seconds and restart the engine: `docker compose restart gameserver`.
-* **"Map not found":** Check that the filename in `tfs/data/world/` matches `mapName` in `config.lua`.
-* **Missing tables in database:** Make sure `schema.sql` is mounted during the first start.
-
----
-
-## ✅ Current Run Status
-
-* **Website** works correctly at `http://localhost`.
-* **Registration:** Creating new users and saving to the database works correctly.
-* **Note:** All features are fully available after a container restart.
-
----
-
-## 📝 Roadmap
-
-* [x] Deploy system (Backend + Frontend + Nginx)
-* [ ] Import a finished map into `tfs/data/world/`.
-* [ ] Change `JWT_SECRET` to a secure random string in production.
-* [ ] Disable the Market module in OTClient.
-* [ ] Test login with character `1/1` or one created via the website.
-
-
-### Recent changes
-
-- 2026-03-24 - fix: enhance RSA key management and error handling in Docker setup; fix: improve executable search logic and streamline packaging process; Small update Tibia client expert Agent.; replace downloadnig place of otclient; feat: add CODEOWNERS to enforce reviews from @tresvitae; feat: Add frontend for Adventur
-
-
-### Client changes
-
-- [Client] 2026-03-24 - fix: enhance RSA key management and error handling in Docker setup; feat: Add frontend for Adventure OTS with highscores, login, registration, and online player features; docs: add detailed README files for AAC frontend, Nginx reverse proxy, and SQL initialization; chore: remove outdated GitHub workflows a
+- If a new module or folder gets its own README, add it here so this file stays the single entrypoint.
+- Runtime defaults for Adventure OTS remain: website at http://localhost, API health at /api/health, and game login at 127.0.0.1:7171.
 
