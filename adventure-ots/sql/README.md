@@ -1,6 +1,6 @@
-# SQL (Adventure OTS)
+# MariaDB Initialization (Adventure OTS)
 
-This directory contains database initialization data used by Docker Compose during first MariaDB startup.
+This directory contains database initialization scripts for MariaDB 10.11, executed by Docker Compose during first database startup.
 
 ## Purpose
 
@@ -65,9 +65,23 @@ MariaDB init scripts in `/docker-entrypoint-initdb.d` run only when database vol
 That means:
 
 - Editing `02_seed_data.sql` will not affect an already initialized database volume.
-- To re-run seed scripts, you must recreate DB volume.
+- You can re-run seed logic manually against a running DB container (recommended for local/dev).
 
-## Reinitialize Database (Development)
+## Reapply Seed Data Without Data Loss (Recommended)
+
+From `adventure-ots/`:
+
+```bash
+docker compose exec -T db sh -lc 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"' < sql/02_seed_data.sql
+```
+
+Why this is robust across local environments:
+
+- Reuses credentials from the container environment (`MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`).
+- Does not assume host-side DB credentials.
+- Works even when the DB volume already exists.
+
+## Reinitialize Database (Development, Destructive Fallback)
 
 From `adventure-ots/`:
 

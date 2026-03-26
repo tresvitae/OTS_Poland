@@ -171,7 +171,7 @@ and mounts downloads directory:
 
 ## Typical Workflow
 
-1. Start backend API and database.
+1. Start backend API and MariaDB database.
 2. Start frontend with `npm run dev` (or via Docker Compose).
 3. Register account on `/register`.
 4. Login on `/login`.

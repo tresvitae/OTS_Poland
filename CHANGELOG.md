@@ -20,5 +20,7 @@
 
 ### 2026-03-26
 
+- 2026-03-26 - feat: update database credentials and improve documentation for MariaDB setup; Merge pull request #4 from tresvitae/feature/api-tests; README; feat: enhance API test coverage with clientless login flow and additional test suggestions; update .gitignore for local artifacts
+
 - 2026-03-26 - README; feat: enhance API test coverage with clientless login flow and additional test suggestions; update .gitignore for local artifacts
 

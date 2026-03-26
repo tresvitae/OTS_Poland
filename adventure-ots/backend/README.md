@@ -8,7 +8,7 @@ This service handles account registration/login, JWT-protected account operation
 
 - Node.js + TypeScript
 - Express 4
-- MariaDB/MySQL via `mysql2/promise`
+- MariaDB 10.11 (via `mysql2/promise` driver)
 - JWT (`jsonwebtoken`)
 - Security middleware: `helmet`, `cors`
 
@@ -46,8 +46,8 @@ LOG_LEVEL=info
 # Database
 DB_HOST=db
 DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
+DB_USER=forgottenserver
+DB_PASSWORD=tibia_pass
 DB_NAME=ots_baza
 
 # Auth
