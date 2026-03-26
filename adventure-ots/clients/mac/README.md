@@ -270,6 +270,31 @@ ditto -c -k --sequesterRsrc --keepParent \
 ls -lh "$ZIP_PATH"
 ```
 
+## Automated scripts (arm64)
+
+Use the helper scripts to automate the configure/build/package flow and enforce arm64 packaging checks.
+
+Build and package in one command:
+
+```bash
+cd /path/to/OTS_Poland
+bash adventure-ots/clients/mac/tools/build-and-package-macos-arm64.sh
+```
+
+Package only (when binary already exists):
+
+```bash
+cd /path/to/OTS_Poland
+bash adventure-ots/clients/mac/tools/package-macos.sh \
+	--binary-path adventure-ots/clients/windows/otclient
+```
+
+Defaults:
+
+- Output zip: `adventure-ots/frontend/public/downloads/macos/adventure-ots-client-macos-arm64.zip`
+- Stage dir: `adventure-ots/clients/mac/dist/macos`
+- SHA-256 checksum: enabled by default (`.sha256` file next to the zip)
+
 ## Signing and notarization (recommended for distribution)
 
 Prerequisites:

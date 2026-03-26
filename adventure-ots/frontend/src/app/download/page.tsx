@@ -5,25 +5,64 @@ import Navbar from '@/components/Navbar';
 
 export const dynamic = 'force-dynamic';
 
-const DOWNLOAD_ROUTE = '/downloads/windows/adventure-ots-client-windows.zip';
-const DOWNLOAD_FS_PATH = path.join(
-    process.cwd(),
-    'public',
-    'downloads',
-    'windows',
-    'adventure-ots-client-windows.zip',
-);
+type PlatformDownloadConfig = {
+    id: string;
+    label: string;
+    ctaLabel: string;
+    route: string;
+    operatorPathHint: string;
+    fsPath: string;
+};
 
-function getZipStatus() {
-    if (!fs.existsSync(DOWNLOAD_FS_PATH)) {
-        return { available: false, sizeLabel: null } as const;
-    }
+const PLATFORM_DOWNLOADS: PlatformDownloadConfig[] = [
+    {
+        id: 'windows',
+        label: 'Windows',
+        ctaLabel: 'Pobierz dla Windows (ZIP)',
+        route: '/downloads/windows/adventure-ots-client-windows.zip',
+        operatorPathHint: 'frontend/public/downloads/windows/adventure-ots-client-windows.zip',
+        fsPath: path.join(
+            process.cwd(),
+            'public',
+            'downloads',
+            'windows',
+            'adventure-ots-client-windows.zip',
+        ),
+    },
+    {
+        id: 'macos-arm64',
+        label: 'macOS (Apple Silicon)',
+        ctaLabel: 'Pobierz dla macOS arm64 (ZIP)',
+        route: '/downloads/macos/adventure-ots-client-macos-arm64.zip',
+        operatorPathHint: 'frontend/public/downloads/macos/adventure-ots-client-macos-arm64.zip',
+        fsPath: path.join(
+            process.cwd(),
+            'public',
+            'downloads',
+            'macos',
+            'adventure-ots-client-macos-arm64.zip',
+        ),
+    },
+];
 
-    const bytes = fs.statSync(DOWNLOAD_FS_PATH).size;
-    return {
-        available: true,
-        sizeLabel: formatBytes(bytes),
-    } as const;
+type PlatformDownloadStatus = PlatformDownloadConfig & {
+    available: boolean;
+    sizeLabel: string | null;
+};
+
+function getDownloadStatuses(): PlatformDownloadStatus[] {
+    return PLATFORM_DOWNLOADS.map((platform) => {
+        if (!fs.existsSync(platform.fsPath)) {
+            return { ...platform, available: false, sizeLabel: null };
+        }
+
+        const bytes = fs.statSync(platform.fsPath).size;
+        return {
+            ...platform,
+            available: true,
+            sizeLabel: formatBytes(bytes),
+        };
+    });
 }
 
 function formatBytes(bytes: number): string {
@@ -40,7 +79,8 @@ function formatBytes(bytes: number): string {
 }
 
 export default function DownloadPage() {
-    const zipStatus = getZipStatus();
+    const downloadStatuses = getDownloadStatuses();
+    const allMissing = downloadStatuses.every((status) => !status.available);
 
     return (
         <>
@@ -59,33 +99,60 @@ export default function DownloadPage() {
                         Pobierz dedykowany klient do naszego serwera. Zawiera on wszystkie wymagane pliki (spr, dat)
                         oraz wstępnie skonfigurowane połączenie.
                     </p>
-                    
+
                     <div className="pt-4 space-y-4">
-                        {zipStatus.available ? (
-                            <a
-                                href={DOWNLOAD_ROUTE}
-                                className="inline-block btn-fantasy text-lg px-8 py-4"
-                                download
-                            >
-                                Pobierz dla Windows (ZIP)
-                            </a>
-                        ) : (
-                            <div className="rounded border border-red-500 bg-red-500/10 px-4 py-3 text-red-300">
-                                Brak spakowanego klienta na serwerze WWW. Dodaj plik ZIP,
-                                aby umożliwić pobieranie.
+                        {allMissing && (
+                            <div className="rounded border border-red-500 bg-red-500/10 px-4 py-3 text-red-300" role="alert">
+                                Brak paczek klienta na serwerze WWW dla wszystkich platform. Dodaj artefakty,
+                                aby odblokować pobieranie.
                             </div>
                         )}
 
-                        <p className="text-stone-light text-sm max-w-xl mx-auto">
-                            Jeśli kliknięcie zwraca 404, dodaj paczkę klienta pod ścieżką:
-                            <span className="block text-gold mt-1">frontend/public/downloads/windows/adventure-ots-client-windows.zip</span>
-                        </p>
-                        
-                        <p className="text-stone-dark text-sm mt-2">
-                            {zipStatus.available
-                                ? `Rozmiar pliku: ${zipStatus.sizeLabel ?? 'nieznany'}`
-                                : 'Plik nie został jeszcze umieszczony.'}
-                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                            {downloadStatuses.map((platform) => (
+                                <section
+                                    key={platform.id}
+                                    className="rounded-lg border border-gold/30 bg-abyss-900/40 p-4 space-y-3"
+                                    aria-label={`Status pobierania dla ${platform.label}`}
+                                >
+                                    <h3 className="text-lg font-cinzel font-semibold text-gold">{platform.label}</h3>
+
+                                    {platform.available ? (
+                                        <>
+                                            <a
+                                                href={platform.route}
+                                                className="inline-block btn-fantasy text-base px-6 py-3"
+                                                download
+                                                aria-label={`Pobierz klient Adventure OTS dla ${platform.label}`}
+                                            >
+                                                {platform.ctaLabel}
+                                            </a>
+                                            <p className="text-stone-dark text-sm">
+                                                Rozmiar pliku: {platform.sizeLabel ?? 'nieznany'}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div
+                                                className="rounded border border-red-500 bg-red-500/10 px-3 py-2 text-red-300 text-sm"
+                                                role="status"
+                                            >
+                                                Brak artefaktu dla tej platformy.
+                                            </div>
+                                            <p className="text-stone-light text-sm">Operator hint (exact path):</p>
+                                            <p className="text-gold text-sm break-all">{platform.operatorPathHint}</p>
+                                        </>
+                                    )}
+                                </section>
+                            ))}
+                        </div>
+
+                        {!allMissing && (
+                            <div className="text-stone-light text-sm max-w-xl mx-auto">
+                                Jeśli kliknięcie zwraca 404, sprawdź czy odpowiedni plik ZIP istnieje w katalogu
+                                wskazanym przy danej platformie.
+                            </div>
+                        )}
                     </div>
                 </div>
 
