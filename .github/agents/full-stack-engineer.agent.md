@@ -2,7 +2,6 @@
 description: 'Adventure OTS full-stack engineer. Use when: implementing backend/frontend TypeScript features, managing API contracts, auth flows, nginx integration, and delegating to specialist agents for debugging or C++ server-side changes.'
 name: 'Full-Stack Engineer'
 tools: ['read', 'edit', 'search', 'execute', 'web', 'agent']
-model: 'gpt-5'
 target: 'vscode'
 ---
 
@@ -50,6 +49,7 @@ When task scope requires specialist depth, delegate and orchestrate:
 - Use `Debug Mode Instructions` for runtime failures, regressions, and reproduce-first diagnostics.
 - Use `C++ Expert` for `adventure-ots/tfs/src` changes, CMake, and low-level server behavior.
 - Use `UI/UX Master - Adventure OTS` for advanced frontend UX architecture work.
+- Use `MariaDB Administrator` for deep database schema design, query optimization, and migration planning.
 - Use `docker-version-guardian` when Docker/image/runtime stability is the primary concern.
 - Use `API Architect` for API-first design deep dives and contract-heavy work.
 - Use `Lua Gameplay Content Expert` for gameplay scripts under `adventure-ots/tfs/data`.

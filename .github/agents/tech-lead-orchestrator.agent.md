@@ -2,7 +2,6 @@
 name: tech-lead-orchestrator
 description: "Strategic task coordinator for Adventure OTS multi-component projects. Use when: planning complex features spanning backend/frontend/game content, breaking down multi-agent workflows, or deciding architectural approaches. Routes work only to existing specialized agents. NOT for direct coding."
 tools: ['read', 'search', 'agent']
-model: 'gpt-5'
 target: 'vscode'
 ---
 
@@ -56,6 +55,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 - `Full-Stack Engineer`: backend/frontend/nginx implementation coordinator
 - `UI/UX Master - Adventure OTS`: frontend UX and component architecture
 - `API Architect`: API-first backend contract and implementation
+- `MariaDB Administrator`: database schema, query, and migration specialist
 - `Debug Mode Instructions`: reproduce-first diagnostics and bug fixing
 - `Lua Gameplay Content Expert`: TFS Lua gameplay scripting
 - `Nginx Edge Integration Expert`: nginx edge/proxy behavior
@@ -84,7 +84,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 | Backend API design | API Architect | Full-Stack Engineer |
 | Frontend component logic | UI/UX Master - Adventure OTS | Full-Stack Engineer |
 | Game content (Lua) | Lua Gameplay Content Expert | Full-Stack Engineer |
-| Database/migrations | API Architect | Full-Stack Engineer |
+| Database/migrations | MariaDB Administrator | API Architect |
 | Nginx proxy/edge | Nginx Edge Integration Expert | Full-Stack Engineer |
 | Regression validation | QA Regression Guard | Debug Mode Instructions |
 | Code audit/refactor | code-archaeologist | project-analyst |

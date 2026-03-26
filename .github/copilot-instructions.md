@@ -21,6 +21,7 @@ Use this matrix to choose the right specialization quickly.
 | Task | Primary Agent | Primary Instruction |
 |------|---------------|---------------------|
 | Backend API, DB query, auth flow | `Full-Stack Engineer` | `.github/instructions/backend.instructions.md` |
+| Database schema, seeds, and migrations | `MariaDB Administrator` | `.github/instructions/mariadb.instructions.md` |
 | Frontend page/component UX work | `UI/UX Master - Adventure OTS` | `.github/instructions/frontend.instructions.md` |
 | Nginx proxy and edge routing changes | `Nginx Edge Integration Expert` | `.github/instructions/nginx-edge.instructions.md` |
 | QA and regression validation | `QA Regression Guard` | `.github/instructions/qa-regression.instructions.md` |
@@ -36,6 +37,7 @@ Use this matrix to choose the right specialization quickly.
 - Nginx: `adventure-ots/nginx/nginx.conf`
 - TFS C++: `adventure-ots/tfs/src`
 - TFS Lua: `adventure-ots/tfs/data`
+- Database: `adventure-ots/sql`, `adventure-ots/tfs/schema.sql`
 
 Use backend/frontend naming consistently in new documentation and agent prompts.
 
@@ -58,4 +60,5 @@ When backend or frontend route behavior changes, verify proxy behavior in `adven
 
 For compose commands, startup, debugging, and environment setup, use:
 - `adventure-ots/README.md`
+- `adventure-ots/sql/README.md`
 - service-level READMEs under `adventure-ots/backend`, `adventure-ots/frontend`, and `adventure-ots/nginx`.
