@@ -103,6 +103,24 @@ In `client/init.lua`:
 EnterGame.setUniqueServer("127.0.0.1", 7171, 1098)
 ```
 
+### Client build artifacts policy (`client/` and website downloads)
+
+The `client/` directory is the OTClient source and local build workspace.
+
+- `client/otclient.exe`
+    - What it is: compiled Windows OTClient executable.
+    - When created: after a local or CI build.
+    - Scope: generated artifact, platform-specific.
+
+- `client/otclient.pdb`
+    - What it is: Windows debug symbols for stack traces/crash diagnostics.
+    - When needed: debugging builds and post-mortem analysis.
+    - Scope: generated artifact, usually large, not required for normal gameplay runtime.
+
+- `frontend/public/downloads/windows/`
+    - Purpose: public website download location for a packaged Windows client archive.
+    - Expected file: `adventure-ots-client-windows.zip`.
+
 ## 🛠️ Debugging
 
 ```bash
