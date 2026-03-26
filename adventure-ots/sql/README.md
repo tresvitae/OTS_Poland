@@ -1,6 +1,6 @@
-# SQL (Adventure OTS)
+# MariaDB Initialization (Adventure OTS)
 
-This directory contains database initialization data used by Docker Compose during first MariaDB startup.
+This directory contains database initialization scripts for MariaDB 10.11, executed by Docker Compose during first database startup.
 
 ## Purpose
 

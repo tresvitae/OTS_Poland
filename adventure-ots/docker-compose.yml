@@ -3,7 +3,7 @@ services:
   # Baza danych - MariaDB 10.11 LTS
   # ========================================
   db:
-    image: mariadb:10.11
+    image: mariadb:10.11.11
     container_name: ots_db
     restart: unless-stopped
     environment:
@@ -12,7 +12,12 @@ services:
       MYSQL_DATABASE: ots_baza
       MYSQL_USER: forgottenserver
       MYSQL_PASSWORD: tibia_pass
+    command:
+      - mariadbd
+      - --skip-name-resolve
+      - --local-infile=0
     ports:
+      # Kept exposed for local API/QA database tests.
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
@@ -67,8 +72,8 @@ services:
       LOG_LEVEL: info
       DB_HOST: db
       DB_PORT: "3306"
-      DB_USER: root
-      DB_PASSWORD: twoje_haslo
+      DB_USER: forgottenserver
+      DB_PASSWORD: tibia_pass
       DB_NAME: ots_baza
       JWT_SECRET: adventure-ots-jwt-secret-change-me
       PORT: "3001"
