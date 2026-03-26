@@ -3,7 +3,7 @@
 # ==============================
 
 # Stage 1: Build TypeScript
-FROM node:20-alpine AS builder
+FROM node:20.19.0-bookworm-slim AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -12,7 +12,7 @@ COPY src/ ./src/
 RUN npm run build
 
 # Stage 2: Production runtime
-FROM node:20-alpine
+FROM node:20.19.0-bookworm-slim
 WORKDIR /app
 
 # Install only production dependencies

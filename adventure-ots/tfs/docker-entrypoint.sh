@@ -4,6 +4,8 @@ set -eu
 KEY_FILE="${TFS_KEY_FILE:-/srv/keys/key.pem}"
 KEY_TMP="/tmp/tfs-key.pem"
 TFS_EXPECTED_KEY_BITS="${TFS_EXPECTED_KEY_BITS:-1024}"
+TFS_USER="${TFS_USER:-tfs}"
+TFS_GROUP="${TFS_GROUP:-tfs}"
 LINK_PATH="/srv/key.pem"
 PUB_PATH="/srv/key.pem.pub"
 
@@ -48,4 +50,9 @@ ln -sf "$KEY_FILE" "$LINK_PATH"
 # Export public key for diagnostics and client sync workflows.
 openssl rsa -in "$KEY_FILE" -pubout -out "$PUB_PATH" >/dev/null 2>&1 || true
 
-exec /bin/tfs
+# Ensure the non-root runtime user can read key material and write pub key output.
+chown "$TFS_USER:$TFS_GROUP" "$KEY_FILE" "$PUB_PATH" >/dev/null 2>&1 || true
+chown -h "$TFS_USER:$TFS_GROUP" "$LINK_PATH" >/dev/null 2>&1 || true
+chmod 600 "$KEY_FILE" >/dev/null 2>&1 || true
+
+exec gosu "$TFS_USER:$TFS_GROUP" /bin/tfs
