@@ -6,6 +6,7 @@ The tests validate:
 - public API availability (`/api/health`, `/api/online`)
 - account registration and login
 - login route success/failure cases with parameterized credentials
+- clientless login flow using seeded DB account (`1` / `1`) and failed auth variants
 - character creation flow
 - persistence check through list endpoint (`/api/account/characters`)
 - request validation errors
@@ -14,6 +15,10 @@ The tests validate:
 Login route analysis is documented in:
 
 - `test/api/login_routes_analysis.md`
+
+Additional test ideas are documented in:
+
+- `test/api/api_test_suggestions.md`
 
 ## Prerequisites
 
@@ -38,6 +43,7 @@ From repository root:
 python -m pip install pytest
 API_BASE_URL=http://localhost/api pytest -q test/api/test_aac_api.py
 API_BASE_URL=http://localhost/api pytest -q test/api/test_login_routes.py
+API_BASE_URL=http://localhost/api pytest -q test/api/test_clientless_login_flow.py
 ```
 
 Alternative (direct backend port, without nginx):
@@ -45,6 +51,7 @@ Alternative (direct backend port, without nginx):
 ```bash
 API_BASE_URL=http://localhost:3001/api pytest -q test/api/test_aac_api.py
 API_BASE_URL=http://localhost:3001/api pytest -q test/api/test_login_routes.py
+API_BASE_URL=http://localhost:3001/api pytest -q test/api/test_clientless_login_flow.py
 ```
 
 ## Parameters
@@ -63,6 +70,7 @@ Example:
 ```bash
 API_BASE_URL=http://localhost/api API_TEST_TIMEOUT=12 pytest -q test/api/test_aac_api.py
 API_BASE_URL=http://localhost/api API_TEST_TIMEOUT=12 pytest -q test/api/test_login_routes.py
+API_BASE_URL=http://localhost/api API_TEST_TIMEOUT=12 pytest -q test/api/test_clientless_login_flow.py
 ```
 
 ## Notes

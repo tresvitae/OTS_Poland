@@ -6,3 +6,13 @@ adventure-ots/tfs/key.pem.pub
 .venv
 adventure-ots/frontend/public/downloads/*.zip
 adventure-ots/frontend/public/downloads/windows/*.zip
+
+# Python local artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Optional local venv under tests
+test/api/.venv/
