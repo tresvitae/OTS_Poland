@@ -54,6 +54,8 @@ jobs:
           fi
 
           ASSET_BASE="adventure-ots-client-macos-arm64-${VERSION}"
+          CANONICAL_ZIP="adventure-ots/frontend/public/downloads/macos/adventure-ots-client-macos-arm64.zip"
+          CANONICAL_SHA256="${CANONICAL_ZIP}.sha256"
           OUTPUT_DIR="${RUNNER_TEMP}/otclient-release"
           ZIP_FILE="${OUTPUT_DIR}/${ASSET_BASE}.zip"
           SHA256_FILE="${ZIP_FILE}.sha256"
@@ -62,19 +64,20 @@ jobs:
 
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "release_tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "canonical_zip=${CANONICAL_ZIP}" >> "$GITHUB_OUTPUT"
+          echo "canonical_sha256=${CANONICAL_SHA256}" >> "$GITHUB_OUTPUT"
           echo "zip_file=${ZIP_FILE}" >> "$GITHUB_OUTPUT"
           echo "sha256_file=${SHA256_FILE}" >> "$GITHUB_OUTPUT"
 
       - name: Run macOS build and package script
         run: |
           chmod +x adventure-ots/clients/mac/tools/build-and-package-macos-arm64.sh
-          adventure-ots/clients/mac/tools/build-and-package-macos-arm64.sh \
-            --output-zip "${{ steps.version.outputs.zip_file }}"
+          adventure-ots/clients/mac/tools/build-and-package-macos-arm64.sh
 
-      - name: Verify release assets
+      - name: Verify canonical artifacts
         run: |
-          ZIP_FILE="${{ steps.version.outputs.zip_file }}"
-          SHA256_FILE="${{ steps.version.outputs.sha256_file }}"
+          ZIP_FILE="${{ steps.version.outputs.canonical_zip }}"
+          SHA256_FILE="${{ steps.version.outputs.canonical_sha256 }}"
 
           [[ -f "$ZIP_FILE" ]] || {
             echo "ERROR: ZIP artifact not found at $ZIP_FILE"
@@ -88,6 +91,23 @@ jobs:
           echo "ZIP: $ZIP_FILE"
           ls -lh "$ZIP_FILE"
           echo "SHA256: $SHA256_FILE"
+          ls -lh "$SHA256_FILE"
+
+      - name: Prepare versioned release assets
+        run: |
+          CANONICAL_ZIP="${{ steps.version.outputs.canonical_zip }}"
+          ZIP_FILE="${{ steps.version.outputs.zip_file }}"
+          SHA256_FILE="${{ steps.version.outputs.sha256_file }}"
+
+          cp "$CANONICAL_ZIP" "$ZIP_FILE"
+          (
+            cd "$(dirname "$ZIP_FILE")"
+            shasum -a 256 "$(basename "$ZIP_FILE")" > "$(basename "$SHA256_FILE")"
+          )
+
+          echo "Versioned ZIP: $ZIP_FILE"
+          ls -lh "$ZIP_FILE"
+          echo "Versioned SHA256: $SHA256_FILE"
           ls -lh "$SHA256_FILE"
 
       - name: Optional signing and notarization placeholders

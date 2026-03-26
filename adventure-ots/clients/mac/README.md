@@ -295,6 +295,47 @@ Defaults:
 - Stage dir: `adventure-ots/clients/mac/dist/macos`
 - SHA-256 checksum: enabled by default (`.sha256` file next to the zip)
 
+## CI automation and publishing (macOS arm64)
+
+### Build workflow
+
+- Workflow file: `.github/workflows/otclient-macos-build.yml`
+- Triggers:
+	- `push` and `pull_request`
+	- Path filters:
+		- `adventure-ots/clients/windows/**`
+		- `adventure-ots/clients/mac/**`
+		- `.github/workflows/otclient-macos-build.yml`
+- Produced artifact (GitHub Actions artifact upload):
+	- Artifact name: `macos-otclient-arm64`
+	- Files:
+		- `adventure-ots-client-macos-arm64.zip`
+		- `adventure-ots-client-macos-arm64.zip.sha256`
+
+### Publish workflow
+
+- Workflow file: `.github/workflows/otclient-macos-publish.yml`
+- Triggers:
+	- Tag push matching `v*`
+	- Manual run via `workflow_dispatch`
+- Published release assets:
+	- `adventure-ots-client-macos-arm64-<version>.zip`
+	- `adventure-ots-client-macos-arm64-<version>.zip.sha256`
+
+Version behavior:
+
+- Tag run (`v*`): `<version>` is the git tag name (for example, `v1.2.0`).
+- Manual run (`workflow_dispatch`): `<version>` is `manual-${GITHUB_RUN_NUMBER}` and a prerelease with the same tag is created.
+
+Rollback if a bad artifact is released:
+
+1. Open the affected GitHub Release.
+2. Delete both bad assets from that release:
+	 - `adventure-ots-client-macos-arm64-<version>.zip`
+	 - `adventure-ots-client-macos-arm64-<version>.zip.sha256`
+3. Re-run `.github/workflows/otclient-macos-publish.yml` with a fixed commit/version.
+4. Confirm the new `.zip` and `.sha256` pair is present and checksum matches before announcing availability.
+
 ## Signing and notarization (recommended for distribution)
 
 Prerequisites:
