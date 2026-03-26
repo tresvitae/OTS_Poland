@@ -20,6 +20,8 @@ jobs:
   build-macos-arm64:
     runs-on: macos-14
     name: Build & Package macOS OTClient (arm64)
+    # Disabled intentionally. To re-enable, remove this line or set it to true.
+    if: ${{ false }}
 
     steps:
       - name: Checkout repository

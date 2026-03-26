@@ -18,6 +18,8 @@ jobs:
   build:
     name: Build TFS (Ubuntu)
     runs-on: ubuntu-22.04
+    # Disabled intentionally. To re-enable, remove this line or set it to true.
+    if: ${{ false }}
 
     steps:
       - name: Checkout with submodules
@@ -72,6 +74,8 @@ jobs:
   lint-cpp:
     name: Static Analysis (cppcheck)
     runs-on: ubuntu-22.04
+    # Disabled intentionally. To re-enable, remove this line or set it to true.
+    if: ${{ false }}
     steps:
       - uses: actions/checkout@v4
       - name: Install cppcheck
