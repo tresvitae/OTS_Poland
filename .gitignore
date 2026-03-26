@@ -4,8 +4,6 @@ adventure-ots/tfs/data/things/*
 TODO
 adventure-ots/tfs/key.pem.pub
 .venv
-adventure-ots/frontend/public/downloads/*.zip
-adventure-ots/frontend/public/downloads/windows/*.zip
 
 # Python local artifacts
 __pycache__/
@@ -16,3 +14,13 @@ htmlcov/
 
 # Optional local venv under tests
 test/api/.venv/
+
+# macOS OTClient local/build artifacts
+adventure-ots/clients/mac/dist/
+adventure-ots/clients/mac/build/
+adventure-ots/clients/mac/.local/
+
+# Windows and macOS packaged artifacts
+adventure-ots/frontend/public/downloads/macos/*
+adventure-ots/frontend/public/downloads/*.zip
+adventure-ots/frontend/public/downloads/windows/*
