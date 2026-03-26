@@ -16,3 +16,4 @@ htmlcov/
 
 # Optional local venv under tests
 test/api/.venv/
+adventure-ots/clients/mac/.local/vcpkg-triplets/arm64-osx-release.cmake

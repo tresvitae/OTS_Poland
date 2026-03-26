@@ -73,9 +73,64 @@ if [[ "$CHECKSUM" != "on" && "$CHECKSUM" != "off" ]]; then
   fail "--checksum must be on or off"
 fi
 
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  fail "This script must be run on macOS (Darwin host required)"
+fi
+
+prepend_path_if_dir() {
+  local dir="$1"
+  [[ -d "$dir" ]] || return 0
+  case ":$PATH:" in
+    *":$dir:"*) ;;
+    *) PATH="$dir:$PATH" ;;
+  esac
+}
+
+prepend_path_if_dir "/opt/homebrew/bin"
+prepend_path_if_dir "/usr/local/bin"
+export PATH
+
 if ! command -v cmake >/dev/null 2>&1; then
   fail "'cmake' command is required"
 fi
+if ! command -v ninja >/dev/null 2>&1; then
+  fail "'ninja' command is required (install with: brew install ninja)"
+fi
+if ! command -v pkg-config >/dev/null 2>&1; then
+  fail "'pkg-config' command is required (install with: brew install pkg-config)"
+fi
+if ! xcode-select -p >/dev/null 2>&1; then
+  fail "Xcode command line tools are required (run: xcode-select --install)"
+fi
+
+if [[ -z "${VCPKG_ROOT:-}" ]]; then
+  VCPKG_ROOT="$HOME/.local/share/vcpkg"
+fi
+if [[ ! -d "$VCPKG_ROOT" ]]; then
+  if ! command -v git >/dev/null 2>&1; then
+    fail "'git' command is required to clone vcpkg"
+  fi
+  echo "VCPKG_ROOT not found at '$VCPKG_ROOT'; cloning vcpkg..."
+  git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+fi
+
+VCPKG_BOOTSTRAP_SCRIPT="$VCPKG_ROOT/bootstrap-vcpkg.sh"
+VCPKG_BIN="$VCPKG_ROOT/vcpkg"
+VCPKG_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+if [[ ! -f "$VCPKG_BOOTSTRAP_SCRIPT" ]]; then
+  fail "vcpkg bootstrap script missing at '$VCPKG_BOOTSTRAP_SCRIPT'"
+fi
+if [[ ! -x "$VCPKG_BIN" ]]; then
+  echo "vcpkg executable not found; bootstrapping in '$VCPKG_ROOT'..."
+  (cd "$VCPKG_ROOT" && ./bootstrap-vcpkg.sh)
+fi
+
+export VCPKG_ROOT
+if [[ ! -f "$VCPKG_TOOLCHAIN_FILE" ]]; then
+  fail "vcpkg toolchain file not found at '$VCPKG_TOOLCHAIN_FILE'"
+fi
+
 if [[ ! -x "$PACKAGE_SCRIPT" ]]; then
   chmod +x "$PACKAGE_SCRIPT"
 fi
@@ -83,8 +138,28 @@ if [[ ! -d "$SOURCE_ROOT" ]]; then
   fail "OTClient source root not found at '$SOURCE_ROOT'"
 fi
 
+OVERLAY_TRIPLETS_DIR="$MAC_ROOT/.local/vcpkg-triplets"
+OVERLAY_TRIPLET_FILE="$OVERLAY_TRIPLETS_DIR/arm64-osx-release.cmake"
+
+if [[ -f "$VCPKG_ROOT/triplets/community/arm64-osx.cmake" ]]; then
+  VCPKG_BASE_TRIPLET="$VCPKG_ROOT/triplets/community/arm64-osx.cmake"
+elif [[ -f "$VCPKG_ROOT/triplets/arm64-osx.cmake" ]]; then
+  VCPKG_BASE_TRIPLET="$VCPKG_ROOT/triplets/arm64-osx.cmake"
+else
+  fail "Could not locate base arm64-osx triplet under '$VCPKG_ROOT/triplets'"
+fi
+
+mkdir -p "$OVERLAY_TRIPLETS_DIR"
+cat >"$OVERLAY_TRIPLET_FILE" <<EOF
+include("$VCPKG_BASE_TRIPLET")
+set(VCPKG_BUILD_TYPE release)
+EOF
+
+echo "Using vcpkg overlay triplets: $OVERLAY_TRIPLETS_DIR"
+echo "Using vcpkg target/host triplet: arm64-osx-release"
+
 pushd "$SOURCE_ROOT" >/dev/null
-cmake --preset macos-release -D CMAKE_OSX_ARCHITECTURES=arm64 -D VCPKG_TARGET_TRIPLET=arm64-osx
+cmake --preset macos-release -D CMAKE_OSX_ARCHITECTURES=arm64 -D VCPKG_OVERLAY_TRIPLETS="$OVERLAY_TRIPLETS_DIR" -D VCPKG_TARGET_TRIPLET=arm64-osx-release -D VCPKG_HOST_TRIPLET=arm64-osx-release
 
 build_cmd=(cmake --build --preset macos-release)
 if [[ -n "$BUILD_JOBS" ]]; then
