@@ -20,13 +20,13 @@ adventure-ots/
 ├── sql/
 │   └── 02_seed_data.sql        # Admin account (1/1)
 ├── tfs/
-│   ├── Dockerfile              # Build engine from source (Alpine)
+│   ├── Dockerfile              # Build engine from source (Ubuntu 22.04)
 │   ├── config.lua              # Docker configuration
 │   ├── config.lua.dist         # Original configuration
 │   ├── schema.sql              # TFS database schema
 │   └── data/                   # Game data (maps, NPCs, spells…)
 ├── backend/
-│   ├── Dockerfile              # Node.js 20 Alpine (multi-stage)
+│   ├── Dockerfile              # Node.js pinned image (multi-stage)
 │   ├── package.json            # Express, mysql2, JWT, Helmet
 │   └── src/                    # TypeScript API (routes, auth, db)
 ├── frontend/
@@ -34,7 +34,7 @@ adventure-ots/
 │   ├── package.json            # React 18, Tailwind CSS
 │   └── src/                    # App Router (pages, components)
 ├── nginx/
-│   ├── Dockerfile              # Nginx Alpine
+│   ├── Dockerfile              # Nginx pinned image
 │   └── nginx.conf              # Reverse proxy (/api → backend)
 └── client/
     ├── Dockerfile              # OTClient Mehah

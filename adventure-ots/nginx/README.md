@@ -101,9 +101,9 @@ Always added:
 
 ## Docker Image
 
-Image is built from `nginx:alpine` and only copies custom config:
+Image is built from a pinned Nginx image (default: `nginx:1.26.3-alpine3.20`) and only copies custom config:
 
-1. `FROM nginx:alpine`
+1. `FROM nginx:1.26.3-alpine3.20`
 2. `COPY nginx.conf /etc/nginx/nginx.conf`
 3. `EXPOSE 80`
 
