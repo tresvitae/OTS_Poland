@@ -43,9 +43,10 @@ jobs:
 
       - name: Bootstrap vcpkg
         run: |
-          # Export VCPKG_ROOT for build script
+          # Clone and bootstrap vcpkg for CMake toolchain usage.
           TEMP_VCPKG="${RUNNER_TEMP}/vcpkg"
-          mkdir -p "$TEMP_VCPKG"
+          git clone --depth 1 https://github.com/microsoft/vcpkg "$TEMP_VCPKG"
+          "$TEMP_VCPKG/bootstrap-vcpkg.sh" -disableMetrics
           export VCPKG_ROOT="$TEMP_VCPKG"
           echo "VCPKG_ROOT=$TEMP_VCPKG" >> "$GITHUB_ENV"
           echo "Bootstrap vcpkg at: $TEMP_VCPKG"
