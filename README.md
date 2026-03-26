@@ -54,3 +54,8 @@ For platform startup and runtime details, start with:
 - If a new module or folder gets its own README, add it here so this file stays the single entrypoint.
 - Runtime defaults for Adventure OTS remain: website at http://localhost, API health at /api/health, and game login at 127.0.0.1:7171.
 
+
+### Recent changes
+
+- 2026-03-26 - README; feat: enhance API test coverage with clientless login flow and additional test suggestions; update .gitignore for local artifacts
+
