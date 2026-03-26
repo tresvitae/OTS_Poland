@@ -32,6 +32,43 @@ fail() {
   exit 1
 }
 
+sanitize_macro_token() {
+  local value="$1"
+  value="${value//[^[:alnum:]_]/_}"
+  if [[ -z "$value" ]]; then
+    value="unknown"
+  fi
+  printf '%s\n' "$value"
+}
+
+generate_gitinfo_header() {
+  local gitinfo_path="$SOURCE_ROOT/src/gitinfo.h"
+  local branch="unknown"
+  local version="0.0.0"
+  local commits="0"
+
+  if command -v git >/dev/null 2>&1; then
+    branch="$(git -C "$SOURCE_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
+    version="$(git -C "$SOURCE_ROOT" describe --abbrev=0 --tag 2>/dev/null || echo 0.0.0)"
+    commits="$(git -C "$SOURCE_ROOT" rev-list --count HEAD 2>/dev/null || echo 0)"
+  fi
+
+  branch="$(sanitize_macro_token "$branch")"
+  version="$(sanitize_macro_token "$version")"
+
+  if [[ ! "$commits" =~ ^[0-9]+$ ]]; then
+    commits="0"
+  fi
+
+  cat >"$gitinfo_path" <<EOF
+#define GIT_BRANCH $branch
+#define GIT_VERSION $version
+#define GIT_COMMITS $commits
+EOF
+
+  echo "Generated git info header: $gitinfo_path"
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --binary-path)
@@ -86,6 +123,80 @@ prepend_path_if_dir() {
   esac
 }
 
+append_unique() {
+  local var_name="$1"
+  local value="$2"
+  [[ -n "$value" ]] || return 0
+
+  eval "local current=\"\${${var_name}:-}\""
+  local part
+  IFS=';' read -r -a parts <<< "$current"
+  for part in "${parts[@]}"; do
+    [[ "$part" == "$value" ]] && return 0
+  done
+
+  if [[ -n "$current" ]]; then
+    eval "${var_name}=\"${current};${value}\""
+  else
+    eval "${var_name}=\"${value}\""
+  fi
+}
+
+append_unique_space_flag() {
+  local var_name="$1"
+  local value="$2"
+  [[ -n "$value" ]] || return 0
+
+  eval "local current=\"\${${var_name}:-}\""
+  case " $current " in
+    *" $value "*)
+      return 0
+      ;;
+  esac
+
+  if [[ -n "$current" ]]; then
+    eval "${var_name}=\"${current} ${value}\""
+  else
+    eval "${var_name}=\"${value}\""
+  fi
+}
+
+append_unique_colon_path() {
+  local var_name="$1"
+  local value="$2"
+  [[ -n "$value" ]] || return 0
+
+  eval "local current=\"\${${var_name}:-}\""
+  local part
+  IFS=':' read -r -a parts <<< "$current"
+  for part in "${parts[@]}"; do
+    [[ "$part" == "$value" ]] && return 0
+  done
+
+  if [[ -n "$current" ]]; then
+    eval "${var_name}=\"${current}:${value}\""
+  else
+    eval "${var_name}=\"${value}\""
+  fi
+}
+
+find_file_in_roots() {
+  local relpath="$1"
+  shift
+
+  local root
+  for root in "$@"; do
+    [[ -n "$root" ]] || continue
+    [[ -d "$root" ]] || continue
+    if [[ -f "$root/$relpath" ]]; then
+      printf '%s\n' "$root/$relpath"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 prepend_path_if_dir "/opt/homebrew/bin"
 prepend_path_if_dir "/usr/local/bin"
 export PATH
@@ -102,6 +213,98 @@ fi
 if ! xcode-select -p >/dev/null 2>&1; then
   fail "Xcode command line tools are required (run: xcode-select --install)"
 fi
+
+BREW_PREFIX=""
+if command -v brew >/dev/null 2>&1; then
+  BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
+fi
+
+X11_INCLUDE_ROOTS=()
+X11_LIBRARY_ROOTS=()
+
+if [[ -n "$BREW_PREFIX" ]]; then
+  X11_INCLUDE_ROOTS+=("$BREW_PREFIX/include")
+  X11_LIBRARY_ROOTS+=("$BREW_PREFIX/lib")
+fi
+
+X11_INCLUDE_ROOTS+=(
+  "/opt/X11/include"
+  "/opt/homebrew/include"
+  "/usr/local/include"
+)
+
+X11_LIBRARY_ROOTS+=(
+  "/opt/X11/lib"
+  "/opt/homebrew/lib"
+  "/usr/local/lib"
+)
+
+X11_HEADER_PATH="$(find_file_in_roots "X11/Xlib.h" "${X11_INCLUDE_ROOTS[@]}" || true)"
+GLX_HEADER_PATH="$(find_file_in_roots "GL/glx.h" "${X11_INCLUDE_ROOTS[@]}" || true)"
+X11_LIBRARY_PATH="$(find_file_in_roots "libX11.dylib" "${X11_LIBRARY_ROOTS[@]}" || true)"
+GL_LIBRARY_PATH="$(find_file_in_roots "libGL.dylib" "${X11_LIBRARY_ROOTS[@]}" || true)"
+
+if [[ -z "$X11_HEADER_PATH" || -z "$GLX_HEADER_PATH" || -z "$X11_LIBRARY_PATH" || -z "$GL_LIBRARY_PATH" ]]; then
+  echo "Missing required X11/GLX dependency for macOS OTClient build." >&2
+  [[ -n "$X11_HEADER_PATH" ]] || echo " - Missing header: X11/Xlib.h" >&2
+  [[ -n "$GLX_HEADER_PATH" ]] || echo " - Missing header: GL/glx.h" >&2
+  [[ -n "$X11_LIBRARY_PATH" ]] || echo " - Missing library: libX11.dylib" >&2
+  [[ -n "$GL_LIBRARY_PATH" ]] || echo " - Missing library: libGL.dylib" >&2
+  cat >&2 <<'EOF'
+
+Install XQuartz (recommended on macOS for X11/GLX):
+  brew install --cask xquartz
+
+After installation:
+  1) Start XQuartz once, then restart your terminal session.
+  2) Confirm files exist under /opt/X11 (for example /opt/X11/include/GL/glx.h and /opt/X11/lib/libGL.dylib).
+  3) Re-run this script.
+EOF
+  fail "Cannot continue without GLX/X11 development files."
+fi
+
+X11_INCLUDE_DIR="${X11_HEADER_PATH%/X11/Xlib.h}"
+GLX_INCLUDE_DIR="${GLX_HEADER_PATH%/GL/glx.h}"
+X11_LIBRARY_DIR="$(dirname "$X11_LIBRARY_PATH")"
+GL_LIBRARY_DIR="$(dirname "$GL_LIBRARY_PATH")"
+
+append_unique_space_flag CPPFLAGS "-I$X11_INCLUDE_DIR"
+append_unique_space_flag CPPFLAGS "-I$GLX_INCLUDE_DIR"
+append_unique_space_flag CFLAGS "-I$X11_INCLUDE_DIR"
+append_unique_space_flag CFLAGS "-I$GLX_INCLUDE_DIR"
+append_unique_space_flag CXXFLAGS "-I$X11_INCLUDE_DIR"
+append_unique_space_flag CXXFLAGS "-I$GLX_INCLUDE_DIR"
+append_unique_space_flag LDFLAGS "-L$X11_LIBRARY_DIR"
+append_unique_space_flag LDFLAGS "-L$GL_LIBRARY_DIR"
+
+if [[ -d "$X11_LIBRARY_DIR/pkgconfig" ]]; then
+  append_unique_colon_path PKG_CONFIG_PATH "$X11_LIBRARY_DIR/pkgconfig"
+fi
+if [[ -d "$GL_LIBRARY_DIR/pkgconfig" ]]; then
+  append_unique_colon_path PKG_CONFIG_PATH "$GL_LIBRARY_DIR/pkgconfig"
+fi
+
+export CPPFLAGS CFLAGS CXXFLAGS LDFLAGS PKG_CONFIG_PATH
+
+CMAKE_PREFIX_HINTS="${CMAKE_PREFIX_PATH:-}"
+CMAKE_INCLUDE_HINTS="${CMAKE_INCLUDE_PATH:-}"
+CMAKE_LIBRARY_HINTS="${CMAKE_LIBRARY_PATH:-}"
+
+append_unique CMAKE_PREFIX_HINTS "${X11_INCLUDE_DIR%/include}"
+append_unique CMAKE_PREFIX_HINTS "${GLX_INCLUDE_DIR%/include}"
+append_unique CMAKE_PREFIX_HINTS "${X11_LIBRARY_DIR%/lib}"
+append_unique CMAKE_PREFIX_HINTS "${GL_LIBRARY_DIR%/lib}"
+
+append_unique CMAKE_INCLUDE_HINTS "$X11_INCLUDE_DIR"
+append_unique CMAKE_INCLUDE_HINTS "$GLX_INCLUDE_DIR"
+
+append_unique CMAKE_LIBRARY_HINTS "$X11_LIBRARY_DIR"
+append_unique CMAKE_LIBRARY_HINTS "$GL_LIBRARY_DIR"
+
+echo "Using X11 include dir: $X11_INCLUDE_DIR"
+echo "Using GLX include dir: $GLX_INCLUDE_DIR"
+echo "Using X11 library: $X11_LIBRARY_PATH"
+echo "Using OpenGL library: $GL_LIBRARY_PATH"
 
 if [[ -z "${VCPKG_ROOT:-}" ]]; then
   VCPKG_ROOT="$HOME/.local/share/vcpkg"
@@ -137,6 +340,11 @@ fi
 if [[ ! -d "$SOURCE_ROOT" ]]; then
   fail "OTClient source root not found at '$SOURCE_ROOT'"
 fi
+if [[ ! -d "$SOURCE_ROOT/src" ]]; then
+  fail "OTClient source directory not found at '$SOURCE_ROOT/src'"
+fi
+
+generate_gitinfo_header
 
 OVERLAY_TRIPLETS_DIR="$MAC_ROOT/.local/vcpkg-triplets"
 OVERLAY_TRIPLET_FILE="$OVERLAY_TRIPLETS_DIR/arm64-osx-release.cmake"
@@ -250,7 +458,24 @@ echo "Using inih overlay port dir: $OVERLAY_INIH_DIR"
 echo "Using vcpkg target/host triplet: arm64-osx-release"
 
 pushd "$SOURCE_ROOT" >/dev/null
-cmake --preset macos-release -D CMAKE_OSX_ARCHITECTURES=arm64 -D VCPKG_OVERLAY_TRIPLETS="$OVERLAY_TRIPLETS_DIR" -D VCPKG_OVERLAY_PORTS="$OVERLAY_PORTS_DIR" -D VCPKG_TARGET_TRIPLET=arm64-osx-release -D VCPKG_HOST_TRIPLET=arm64-osx-release
+cmake --preset macos-release \
+  -D CMAKE_OSX_ARCHITECTURES=arm64 \
+  -D OTCLIENT_BUILD_TESTS=OFF \
+  -D VCPKG_OVERLAY_TRIPLETS="$OVERLAY_TRIPLETS_DIR" \
+  -D VCPKG_OVERLAY_PORTS="$OVERLAY_PORTS_DIR" \
+  -D VCPKG_TARGET_TRIPLET=arm64-osx-release \
+  -D VCPKG_HOST_TRIPLET=arm64-osx-release \
+  -D OPENGL_USE_APPLE_X11=ON \
+  -D OPENGL_INCLUDE_DIR="$GLX_INCLUDE_DIR" \
+  -D OPENGL_gl_LIBRARY="$GL_LIBRARY_PATH" \
+  -D X11_X11_INCLUDE_PATH="$X11_INCLUDE_DIR" \
+  -D X11_X11_LIB="$X11_LIBRARY_PATH" \
+  -D CMAKE_PREFIX_PATH="$CMAKE_PREFIX_HINTS" \
+  -D CMAKE_INCLUDE_PATH="$CMAKE_INCLUDE_HINTS" \
+  -D CMAKE_LIBRARY_PATH="$CMAKE_LIBRARY_HINTS" \
+  -D CMAKE_C_FLAGS="$CFLAGS" \
+  -D CMAKE_CXX_FLAGS="$CXXFLAGS" \
+  -D CMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
 
 build_cmd=(cmake --build --preset macos-release)
 if [[ -n "$BUILD_JOBS" ]]; then

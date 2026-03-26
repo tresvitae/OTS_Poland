@@ -125,6 +125,14 @@ inline bool luavalue_cast(const int index, unsigned long& v)
     return r;
 }
 
+// unsigned long long (distinct from unsigned long on some platforms)
+inline int push_luavalue(const unsigned long long v) { push_luavalue(static_cast<double>(v)); return 1; }
+inline bool luavalue_cast(const int index, unsigned long long& v)
+{
+    double d;
+    const bool r = luavalue_cast(index, d); v = d; return r;
+}
+
 template<typename T = lua_u64, std::enable_if_t<!std::is_same_v<T, unsigned long>, int> = 0>
 inline int push_luavalue(lua_u64 v)
 {
