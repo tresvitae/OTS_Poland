@@ -77,11 +77,21 @@ docker compose up -d --build
 ## 🔧 Configuration
 
 ### Database
-Credentials (in `docker-compose.yml`):
+Credentials (in `docker-compose.yml`, development defaults):
 ```
-MYSQL_ROOT_PASSWORD: your_password
+MYSQL_ROOT_PASSWORD: twoje_haslo
 MYSQL_DATABASE: ots_baza
+MYSQL_USER: forgottenserver
+MYSQL_PASSWORD: tibia_pass
 ```
+
+Schema and seed initialization order:
+1. `tfs/schema.sql` -> mounted as `01_schema.sql`
+2. `sql/02_seed_data.sql` -> mounted as `02_seed_data.sql`
+
+Important:
+- Init scripts run only on first DB volume creation.
+- For seed and reinitialization details, see `adventure-ots/sql/README.md`.
 
 ### Game engine
 Edit `tfs/config.lua`:
@@ -170,6 +180,15 @@ Quick usage in GitHub Copilot Chat (VS Code):
 ```text
 /debug-ots issue="Login ERROR 2 after character selection" context="account Patryk/test, stack running locally"
 ```
+
+### Agent Database Workflow
+
+For schema changes, seed updates, or SQL performance work:
+
+- Agent: `.github/agents/mariadb.agent.md`
+- Instruction: `.github/instructions/mariadb.instructions.md`
+
+Use this path for MariaDB 10.11 and TFS 1.4.2 schema-compatible database tasks.
 
 ## ⚠️ Common issues
 

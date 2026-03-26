@@ -116,3 +116,18 @@ SELECT id, name, group_id, account_id, level FROM players WHERE name = 'Admin';
 - Seed script targets TFS 1.4.2 schema conventions.
 - Account passwords are stored as SHA1 hashes for compatibility with current backend/game auth setup.
 
+## Copilot Database Workflow
+
+For database-focused tasks in this repository:
+
+1. Use the MariaDB agent:
+	- `.github/agents/mariadb.agent.md`
+2. Follow the MariaDB instruction file:
+	- `.github/instructions/mariadb.instructions.md`
+
+Use this workflow for:
+- schema/migration planning,
+- seed data changes,
+- query/index optimization,
+- DB runtime troubleshooting in Docker Compose.
+

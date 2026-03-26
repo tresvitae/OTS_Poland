@@ -37,6 +37,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - `project-analyst.agent.md`
 - `code-archeologist.agent.md`
 - `readme.agent.md`
+- `mariadb.agent.md`
 - `git-workflow-master.agent.md`
 
 ### Deprecated
@@ -70,6 +71,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 | Runtime debugging and incident triage | `debug.agent.md` |
 | TFS C++ server code | `expert-cpp-software-engineer.agent.md` |
 | OTClient/OTCv8 work | `tibia-client-expert.agent.md` |
+| Database/schema/migrations | `mariadb.agent.md` |
 | Documentation only | `readme.agent.md` |
 | Git workflow issues | `git-workflow-master.agent.md` |
 
@@ -85,6 +87,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - Reproduce-first debugging: `debug.agent.md`
 - TFS C++ server changes: `expert-cpp-software-engineer.agent.md`
 - OTClient work: `tibia-client-expert.agent.md`
+- Database/schema/migrations: `mariadb.agent.md`
 - Documentation-only work: `readme.agent.md`
 - Architecture discovery/risk mapping: `project-analyst.agent.md`, `code-archeologist.agent.md`
 - Git workflow remediation: `git-workflow-master.agent.md`
@@ -94,6 +97,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - Backend: `adventure-ots/backend`
 - Frontend: `adventure-ots/frontend`
 - Nginx: `adventure-ots/nginx/nginx.conf`
+- Database: `adventure-ots/sql`, `adventure-ots/tfs/schema.sql`
 
 Use backend/frontend naming consistently in all new customizations.
 
@@ -117,5 +121,6 @@ Recommended phased retirement:
 - Workspace instructions: `.github/copilot-instructions.md`
 - Authoring guidance for agents: `.github/instructions/agents.instructions.md`
 - Nginx edge routing guidance: `.github/instructions/nginx-edge.instructions.md`
+- MariaDB guidance: `.github/instructions/mariadb.instructions.md`
 - QA regression guidance: `.github/instructions/qa-regression.instructions.md`
 - Context and structure guidance: `.github/instructions/context-engineering.instructions.md`
