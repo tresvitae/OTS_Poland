@@ -2,6 +2,13 @@
 
 Yes. It is possible to build and package a native macOS OTClient for Apple Silicon in this repository.
 
+## Current project mode (March 2026)
+
+- Local-first flow is the primary path: build and package on an Apple Silicon macOS host using the scripts in `adventure-ots/clients/mac/tools`.
+- CI workflows for mac build/publish exist as templates in `.github/workflows`, but jobs are intentionally gated/disabled for now.
+- Generated mac build/package artifacts remain local by default and are ignored by root `.gitignore` patterns.
+- Re-enabling CI later is expected, but only after signing/notarization policy and release guardrails are finalized.
+
 ## Scope and assumptions
 
 - Target platform: macOS 14+ on Apple Silicon only (arm64).
@@ -295,46 +302,24 @@ Defaults:
 - Stage dir: `adventure-ots/clients/mac/dist/macos`
 - SHA-256 checksum: enabled by default (`.sha256` file next to the zip)
 
-## CI automation and publishing (macOS arm64)
+## CI templates (currently disabled)
 
-### Build workflow
+The repository includes CI templates for macOS arm64 build and publish, but both are intentionally gated with `if: ${{ false }}`.
 
-- Workflow file: `.github/workflows/otclient-macos-build.yml`
-- Triggers:
-	- `push` and `pull_request`
-	- Path filters:
-		- `adventure-ots/clients/windows/**`
-		- `adventure-ots/clients/mac/**`
-		- `.github/workflows/otclient-macos-build.yml`
-- Produced artifact (GitHub Actions artifact upload):
-	- Artifact name: `macos-otclient-arm64`
-	- Files:
-		- `adventure-ots-client-macos-arm64.zip`
-		- `adventure-ots-client-macos-arm64.zip.sha256`
+- Build template: `.github/workflows/otclient-macos-build.yml`
+- Publish template: `.github/workflows/otclient-macos-publish.yml`
 
-### Publish workflow
+Current intent:
 
-- Workflow file: `.github/workflows/otclient-macos-publish.yml`
-- Triggers:
-	- Tag push matching `v*`
-	- Manual run via `workflow_dispatch`
-- Published release assets:
-	- `adventure-ots-client-macos-arm64-<version>.zip`
-	- `adventure-ots-client-macos-arm64-<version>.zip.sha256`
+- Keep local-first build/package flow as the active path while release process decisions are finalized.
+- Preserve workflow templates as ready-to-use references for later automation.
 
-Version behavior:
+How to re-enable later (neutral checklist):
 
-- Tag run (`v*`): `<version>` is the git tag name (for example, `v1.2.0`).
-- Manual run (`workflow_dispatch`): `<version>` is `manual-${GITHUB_RUN_NUMBER}` and a prerelease with the same tag is created.
-
-Rollback if a bad artifact is released:
-
-1. Open the affected GitHub Release.
-2. Delete both bad assets from that release:
-	 - `adventure-ots-client-macos-arm64-<version>.zip`
-	 - `adventure-ots-client-macos-arm64-<version>.zip.sha256`
-3. Re-run `.github/workflows/otclient-macos-publish.yml` with a fixed commit/version.
-4. Confirm the new `.zip` and `.sha256` pair is present and checksum matches before announcing availability.
+1. Confirm local scripts, artifact naming, and checksum outputs are stable.
+2. Finalize signing/notarization secrets and release policy.
+3. Remove or replace the `if: ${{ false }}` gate in each workflow.
+4. Validate with manual runs before enabling push/tag-driven publishing.
 
 ## Signing and notarization (recommended for distribution)
 
@@ -444,6 +429,32 @@ Manual checks:
 - Character list loads.
 - World entry works against `127.0.0.1:7171`.
 
+## Repository hygiene
+
+Generated mac artifacts are intentionally ignored by root `.gitignore` and should stay out of git history.
+
+Ignored local build/package directories:
+
+- `adventure-ots/clients/mac/dist/`
+- `adventure-ots/clients/mac/build/`
+- `adventure-ots/clients/mac/.local/`
+
+Ignored packaged outputs:
+
+- `adventure-ots/frontend/public/downloads/macos/*.zip`
+- `adventure-ots/frontend/public/downloads/macos/*.sha256`
+
+If generated files were tracked previously, remove them from the git index without deleting local files:
+
+```bash
+git rm -r --cached --ignore-unmatch \
+	adventure-ots/clients/mac/dist \
+	adventure-ots/clients/mac/build \
+	adventure-ots/clients/mac/.local \
+	adventure-ots/frontend/public/downloads/macos/*.zip \
+	adventure-ots/frontend/public/downloads/macos/*.sha256
+```
+
 ## Troubleshooting matrix
 
 | Symptom | Likely cause | Fix |
@@ -460,11 +471,9 @@ Manual checks:
 ## Next integration tasks for maintainers
 
 1. Add frontend download UI support for mac artifact route and filename (currently frontend page targets Windows zip only).
-2. Add a dedicated packaging helper script for mac (parallel to current Windows packaging flow) under `adventure-ots/clients/mac`.
-3. Add CI job on `macos-14` runner to compile `macos-release` preset and publish artifact.
-4. Add checksum generation (`sha256`) for mac zip and publish alongside download.
-5. Define release signing policy (cert owner, entitlements policy, notarization credentials handling).
-6. Add a lightweight regression script that verifies app bundle structure and smoke checks against local stack.
+2. Define and document release signing/notarization policy (certificate ownership, entitlements baseline, and credential handling).
+3. Add a lightweight regression script that verifies app bundle structure and local stack smoke checks.
+4. Define criteria and ownership for re-enabling the disabled mac CI templates.
 
 ## Operational notes
 
