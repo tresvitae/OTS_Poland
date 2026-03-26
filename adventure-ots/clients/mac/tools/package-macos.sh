@@ -166,6 +166,10 @@ APP_ROOT="$STAGE_DIR/OtClient.app"
 MACOS_DIR="$APP_ROOT/Contents/MacOS"
 RESOURCES_DIR="$APP_ROOT/Contents/Resources"
 
+if [[ -z "$STAGE_DIR" || "$STAGE_DIR" == "/" ]]; then
+  fail "Refusing to use unsafe stage directory: '$STAGE_DIR'"
+fi
+
 rm -rf "$STAGE_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR" "$APP_ROOT/Contents/Frameworks"
 

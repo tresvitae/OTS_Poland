@@ -1,0 +1,111 @@
+name: macOS OTClient Build (Apple Silicon)
+
+on:
+  push:
+    paths:
+      - 'adventure-ots/clients/windows/**'
+      - 'adventure-ots/clients/mac/**'
+      - '.github/workflows/otclient-macos-build.yml'
+  pull_request:
+    paths:
+      - 'adventure-ots/clients/windows/**'
+      - 'adventure-ots/clients/mac/**'
+      - '.github/workflows/otclient-macos-build.yml'
+
+# ASSUMPTION: Uses macos-14 (Sonoma on Apple Silicon).
+# If arm64 runner availability changes, update to macos-15 or newer LTS.
+# GitHub-hosted macOS runners on Apple Silicon default to arm64 architecture.
+
+jobs:
+  build-macos-arm64:
+    runs-on: macos-14
+    name: Build & Package macOS OTClient (arm64)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          # Ensure cmake and ninja are available
+          brew install cmake ninja || true
+          cmake --version
+          ninja --version
+
+      - name: Verify system architecture
+        run: |
+          echo "Host architecture:"
+          uname -m
+          [[ "$(uname -m)" == "arm64" ]] || {
+            echo "ERROR: Runner is not arm64 (Apple Silicon)"
+            exit 1
+          }
+
+      - name: Bootstrap vcpkg
+        run: |
+          # Export VCPKG_ROOT for build script
+          TEMP_VCPKG="${RUNNER_TEMP}/vcpkg"
+          mkdir -p "$TEMP_VCPKG"
+          export VCPKG_ROOT="$TEMP_VCPKG"
+          echo "VCPKG_ROOT=$TEMP_VCPKG" >> "$GITHUB_ENV"
+          echo "Bootstrap vcpkg at: $TEMP_VCPKG"
+
+      - name: Run macOS build and package script
+        run: |
+          cd "${{ github.workspace }}"
+          chmod +x adventure-ots/clients/mac/tools/build-and-package-macos-arm64.sh
+          adventure-ots/clients/mac/tools/build-and-package-macos-arm64.sh
+
+      - name: Verify artifact files exist
+        run: |
+          ZIP_FILE="adventure-ots/frontend/public/downloads/macos/adventure-ots-client-macos-arm64.zip"
+          SHA256_FILE="${ZIP_FILE}.sha256"
+          
+          echo "Checking artifact files..."
+          [[ -f "$ZIP_FILE" ]] || {
+            echo "ERROR: ZIP artifact not found at $ZIP_FILE"
+            exit 1
+          }
+          [[ -f "$SHA256_FILE" ]] || {
+            echo "ERROR: SHA256 checksum file not found at $SHA256_FILE"
+            exit 1
+          }
+          
+          echo "✓ ZIP artifact:     $(ls -lh "$ZIP_FILE" | awk '{print $5, $9}')"
+          echo "✓ SHA256 checksum:  $(ls -lh "$SHA256_FILE" | awk '{print $5, $9}')"
+
+      - name: Verify binary architecture
+        run: |
+          # Extract and verify the binary inside the ZIP is arm64-only
+          ZIP_FILE="adventure-ots/frontend/public/downloads/macos/adventure-ots-client-macos-arm64.zip"
+          TEMP_EXTRACT="${RUNNER_TEMP}/otclient-verify"
+          
+          mkdir -p "$TEMP_EXTRACT"
+          unzip -q "$ZIP_FILE" -d "$TEMP_EXTRACT"
+          
+          # Find the executable (typically Adventure OTS.app/Contents/MacOS/otclient or similar)
+          BINARY=$(find "$TEMP_EXTRACT" -type f -name "otclient" -o -name "Adventure*" 2>/dev/null | head -n 1)
+          
+          if [[ -n "$BINARY" && -f "$BINARY" ]]; then
+            echo "Found binary: $BINARY"
+            ARCHS=$(lipo -archs "$BINARY" 2>/dev/null || echo "N/A (not a Mach-O)" )
+            echo "Binary architectures: $ARCHS"
+            
+            # Verify arm64 is present
+            if echo "$ARCHS" | grep -q "arm64"; then
+              echo "✓ Binary contains arm64 architecture"
+            else
+              echo "ERROR: Binary does not contain arm64 architecture"
+              exit 1
+            fi
+          else
+            echo "⚠ Could not locate executable in ZIP for architecture verification"
+          fi
+
+      - name: Upload artifact to GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-otclient-arm64
+          path: adventure-ots/frontend/public/downloads/macos/adventure-ots-client-macos-arm64.*
+          retention-days: 7
+          if-no-files-found: error
