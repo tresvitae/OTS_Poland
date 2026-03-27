@@ -98,6 +98,16 @@ Deactivate when done:
 deactivate_otclient_arm64
 ```
 
+## Troubleshooting: Gatekeeper Error
+
+If you run the compiled un-signed app on another machine (or after downloading), macOS Gatekeeper may show an error: **"You can’t open the application “OtClient” because it may be damaged or incomplete."**
+
+This happens because the application is unsigned. To bypass this, open Terminal and run the following command (adjust the path to wherever you extracted `OtClient.app`):
+
+```bash
+xattr -cr /path/to/OtClient.app
+```
+
 ## Troubleshooting
 
 ### macOS Sequoia `com.apple.provenance` Quarantine Restriction

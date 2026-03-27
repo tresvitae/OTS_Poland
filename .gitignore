@@ -22,5 +22,8 @@ adventure-ots/clients/mac/.local/
 
 # Windows and macOS packaged artifacts
 adventure-ots/frontend/public/downloads/macos/*
+!adventure-ots/frontend/public/downloads/macos/*.md
 adventure-ots/frontend/public/downloads/*.zip
+!adventure-ots/frontend/public/downloads/*.md
 adventure-ots/frontend/public/downloads/windows/*
+adventure-ots/frontend/public/.DS_Store

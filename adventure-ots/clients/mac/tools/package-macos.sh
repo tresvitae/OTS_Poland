@@ -326,6 +326,11 @@ OUTPUT_ZIP="$(resolve_path "$OUTPUT_ZIP")"
 mkdir -p "$(dirname "$OUTPUT_ZIP")"
 rm -f "$OUTPUT_ZIP"
 
+# Strip extended attributes (especially quarantine flags) from the bundle before zipping.
+# This prevents macOS from refusing to open the app when downloaded with the error:
+# "You can't open the application 'OtClient' because it may be damaged or incomplete."
+xattr -cr "$APP_ROOT"
+
 ditto -c -k --sequesterRsrc --keepParent "$APP_ROOT" "$OUTPUT_ZIP"
 
 if [[ "$CHECKSUM" == "on" ]]; then
