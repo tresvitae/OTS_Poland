@@ -506,3 +506,18 @@ git rm -r --cached --ignore-unmatch \
 - First clean build can take significantly longer due dependency resolution and compilation.
 - Keep local signing credentials and app-specific passwords outside git and outside shared shell history.
 - If build state becomes inconsistent, remove only local cache/build directories under `adventure-ots/clients/mac/.local` and re-run configure/build.
+
+
+
+# Clean build
+
+rm -rf /Users/patrykfuta/code/OTS_Poland/adventure-ots/clients/mac/.local
+rm -rf /Users/patrykfuta/code/OTS_Poland/adventure-ots/clients/mac/dist
+mkdir -p /Users/patrykfuta/code/OTS_Poland/adventure-ots/clients/mac/.local
+mkdir -p /Users/patrykfuta/code/OTS_Poland/adventure-ots/clients/mac/dist
+
+attr -c /Users/patrykfuta/code/OTS_Poland/adventure-ots/clients/mac
+xattr -c /Users/patrykfuta/code/OTS_Poland/adventure-ots/clients
+
+cd /Users/patrykfuta/code/OTS_Poland
+bash scripts/build-otclient-macos-arm64.sh 2>&1 | tee /tmp/otclient-build.log

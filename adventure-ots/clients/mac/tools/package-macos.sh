@@ -171,86 +171,121 @@ if [[ -z "$STAGE_DIR" || "$STAGE_DIR" == "/" ]]; then
 fi
 
 rm -rf "$STAGE_DIR"
-mkdir -p "$MACOS_DIR" "$RESOURCES_DIR" "$APP_ROOT/Contents/Frameworks"
+HELPERS_DIR="$APP_ROOT/Contents/Helpers"
+mkdir -p "$MACOS_DIR" "$RESOURCES_DIR" "$APP_ROOT/Contents/Frameworks" "$HELPERS_DIR"
 
-cp "$BINARY_PATH" "$MACOS_DIR/OtClient-bin"
-chmod +x "$MACOS_DIR/OtClient-bin"
-
-cat > "$MACOS_DIR/OtClient" <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
-# Keep startup deterministic for Finder launches where cwd is not the app bundle.
-cd "$SCRIPT_DIR"
+# Place the real binary in Contents/Helpers — NOT Contents/MacOS.
+# codesign --deep strips or invalidates extra Mach-O files in Contents/MacOS
+# that are not the CFBundleExecutable.
+cp "$BINARY_PATH" "$HELPERS_DIR/OtClient-bin"
+chmod +x "$HELPERS_DIR/OtClient-bin"
 
 # ---------------------------------------------------------------------------
-# XQuartz bootstrap – ensure the X11 display server is available on macOS.
-# The OTClient binary links against XQuartz's libX11/libGLX and requires a
-# running X11 display.  Finder/Spotlight launches do NOT inherit DISPLAY,
-# so we must set it up ourselves.
+# Build a compiled C launcher stub (OtClient) that bootstraps XQuartz before
+# exec'ing the real binary (OtClient-bin).
+#
+# macOS Gatekeeper requires CFBundleExecutable to be a valid Mach-O binary.
+# A shell script wrapper causes "damaged or incomplete" or "executable is
+# missing" errors after code signing on macOS Sequoia.
 # ---------------------------------------------------------------------------
-xquartz_running() {
-  pgrep -qx Xquartz >/dev/null 2>&1 || pgrep -qx X11.bin >/dev/null 2>&1
+LAUNCHER_SRC="$STAGE_DIR/OtClient-launcher.c"
+cat > "$LAUNCHER_SRC" <<'LAUNCHER_C'
+#include <errno.h>
+#include <libgen.h>
+#include <mach-o/dyld.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+static int xquartz_running(void) {
+    return system("pgrep -qx Xquartz >/dev/null 2>&1 || "
+                  "pgrep -qx X11.bin >/dev/null 2>&1") == 0;
 }
 
-open_xquartz() {
-  if open -a "XQuartz" >/dev/null 2>&1; then
-    return 0
-  fi
-
-  if command -v mdfind >/dev/null 2>&1; then
-    local xquartz_app
-    xquartz_app="$(mdfind 'kMDItemCFBundleIdentifier == "org.xquartz.X11"' | head -n 1 || true)"
-    if [[ -n "$xquartz_app" && -d "$xquartz_app" ]]; then
-      open "$xquartz_app" >/dev/null 2>&1 && return 0
-    fi
-  fi
-
-  return 1
+static int wait_for_socket(const char *path, int max_attempts) {
+    struct stat st;
+    for (int i = 0; i < max_attempts; i++) {
+        if (stat(path, &st) == 0) return 1;
+        usleep(500000);
+    }
+    return 0;
 }
 
-wait_for_xquartz_socket() {
-  local socket_path="/tmp/.X11-unix/X0"
-  local attempts=20
-  local i
+int main(int argc, char *argv[]) {
+    /* Resolve this executable's directory. */
+    char exe_path[4096];
+    uint32_t size = sizeof(exe_path);
+    if (_NSGetExecutablePath(exe_path, &size) != 0) {
+        fprintf(stderr, "OtClient: could not resolve executable path\n");
+        return 1;
+    }
+    char resolved[4096];
+    if (!realpath(exe_path, resolved)) {
+        fprintf(stderr, "OtClient: realpath failed: %s\n", strerror(errno));
+        return 1;
+    }
+    char *dir = dirname(resolved);
 
-  for i in $(seq 1 "$attempts"); do
-    if [[ -S "$socket_path" ]]; then
-      return 0
-    fi
-    sleep 0.5
-  done
+    /* cd to the executable directory so relative paths work. */
+    if (chdir(dir) != 0) {
+        fprintf(stderr, "OtClient: chdir(%s) failed: %s\n", dir, strerror(errno));
+    }
 
-  return 1
+    /* --- XQuartz bootstrap ------------------------------------------------ */
+    if (!xquartz_running()) {
+        if (system("open -a XQuartz >/dev/null 2>&1") != 0) {
+            /* Try mdfind fallback. */
+            system("mdfind 'kMDItemCFBundleIdentifier == \"org.xquartz.X11\"' "
+                   "| head -n 1 | xargs open >/dev/null 2>&1");
+        }
+        if (!wait_for_socket("/tmp/.X11-unix/X0", 20)) {
+            fprintf(stderr,
+                    "OtClient: XQuartz display server did not start in time.\n"
+                    "Launch XQuartz manually, then re-open OtClient.\n");
+            system("osascript -e 'display alert \"XQuartz Required\" "
+                   "message \"XQuartz did not start in time.\\n\\n"
+                   "Launch XQuartz manually, wait a few seconds, "
+                   "then re-open OtClient.\" as critical' 2>/dev/null");
+            return 1;
+        }
+    }
+
+    /* Set DISPLAY if not already present. */
+    if (!getenv("DISPLAY")) {
+        setenv("DISPLAY", ":0", 0);
+    }
+    /* Set XAUTHORITY if missing (XQuartz default). */
+    if (!getenv("XAUTHORITY")) {
+        const char *home = getenv("HOME");
+        if (home) {
+            char xauth[4096];
+            snprintf(xauth, sizeof(xauth), "%s/.Xauthority", home);
+            setenv("XAUTHORITY", xauth, 0);
+        }
+    }
+
+    /* Build path to the real binary in Contents/Helpers and exec it. */
+    char real_bin[4096];
+    snprintf(real_bin, sizeof(real_bin), "%s/../Helpers/OtClient-bin", dir);
+    argv[0] = real_bin;
+    execv(real_bin, argv);
+
+    fprintf(stderr, "OtClient: execv(%s) failed: %s\n", real_bin, strerror(errno));
+    return 1;
 }
+LAUNCHER_C
 
-# Start XQuartz if it is not already running.
-if ! xquartz_running; then
-  if ! open_xquartz; then
-    osascript -e 'display alert "XQuartz Required" message "OtClient needs XQuartz to run, but it could not be launched automatically.\n\nInstall or reinstall it with:\n  brew install --cask xquartz\n\nThen launch XQuartz once and re-open OtClient." as critical' 2>/dev/null || true
-    echo "Error: Failed to launch XQuartz." >&2
-    echo "Install or reinstall with: brew install --cask xquartz" >&2
-    exit 1
-  fi
-fi
-
-if ! wait_for_xquartz_socket; then
-  osascript -e 'display alert "XQuartz Timeout" message "XQuartz did not become ready in time.\n\nLaunch XQuartz manually, wait a few seconds, then re-open OtClient." as critical' 2>/dev/null || true
-  echo "Error: XQuartz display server socket (/tmp/.X11-unix/X0) not available after waiting." >&2
-  exit 1
-fi
-
-# Set DISPLAY if the environment does not already provide it.
-export DISPLAY="${DISPLAY:-:0}"
-
-# Set XAUTHORITY if missing (XQuartz default).
-export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
-
-exec "$SCRIPT_DIR/OtClient-bin" "$@"
-EOF
+echo "Compiling native launcher stub..."
+clang -arch arm64 \
+  -mmacosx-version-min=14.0 \
+  -O2 \
+  -o "$MACOS_DIR/OtClient" \
+  "$LAUNCHER_SRC"
 chmod +x "$MACOS_DIR/OtClient"
+rm -f "$LAUNCHER_SRC"
 
 for dir_name in "${required_directories[@]}"; do
   cp -R "$SOURCE_ROOT/$dir_name" "$RESOURCES_DIR/$dir_name"
@@ -326,10 +361,46 @@ OUTPUT_ZIP="$(resolve_path "$OUTPUT_ZIP")"
 mkdir -p "$(dirname "$OUTPUT_ZIP")"
 rm -f "$OUTPUT_ZIP"
 
-# Strip extended attributes (especially quarantine flags) from the bundle before zipping.
-# This prevents macOS from refusing to open the app when downloaded with the error:
-# "You can't open the application 'OtClient' because it may be damaged or incomplete."
+# Strip extended attributes (especially quarantine flags) from the bundle before signing.
 xattr -cr "$APP_ROOT"
+
+# Ad-hoc code sign the app bundle so Gatekeeper does not reject it with:
+# "You can't open the application 'OtClient' because it may be damaged or incomplete."
+# The entitlements grant JIT permission required by the LuaJIT runtime.
+ENTITLEMENTS_FILE="$STAGE_DIR/OtClient.entitlements"
+cat > "$ENTITLEMENTS_FILE" <<'ENTITLEMENTS'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.cs.allow-jit</key>
+  <true/>
+  <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+  <true/>
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+</dict>
+</plist>
+ENTITLEMENTS
+
+# Sign each binary individually (inside-out), then seal the bundle.
+# Do NOT use --deep: it strips or invalidates extra Mach-O files that are
+# not the CFBundleExecutable.
+codesign --force --sign - \
+  --entitlements "$ENTITLEMENTS_FILE" \
+  "$APP_ROOT/Contents/Helpers/OtClient-bin"
+
+codesign --force --sign - \
+  --entitlements "$ENTITLEMENTS_FILE" \
+  "$APP_ROOT/Contents/MacOS/OtClient"
+
+# Seal the whole bundle (lightweight, no --deep).
+codesign --force --sign - "$APP_ROOT"
+
+echo "Ad-hoc code signature applied."
+codesign --verify --strict --verbose=2 "$APP_ROOT" 2>&1 || echo "Warning: codesign verify reported issues (non-fatal for ad-hoc)."
+
+rm -f "$ENTITLEMENTS_FILE"
 
 ditto -c -k --sequesterRsrc --keepParent "$APP_ROOT" "$OUTPUT_ZIP"
 
