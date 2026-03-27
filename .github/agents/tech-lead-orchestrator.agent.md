@@ -3,6 +3,7 @@ name: tech-lead-orchestrator
 description: "Strategic task coordinator for Adventure OTS multi-component projects. Use when: planning complex features spanning backend/frontend/game content, breaking down multi-agent workflows, or deciding architectural approaches. Routes work only to existing specialized agents. NOT for direct coding."
 tools: ['read', 'search', 'agent']
 target: 'vscode'
+model: Gemini 3.1 Pro (Preview) (copilot)
 ---
 
 # Tech Lead Orchestrator – Strategic Task Coordinator

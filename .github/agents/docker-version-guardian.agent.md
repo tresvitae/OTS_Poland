@@ -5,7 +5,7 @@ tools:
   - read
   - search
   - edit
-model: 'gpt-5'
+model: Claude Haiku 4.5 (copilot)
 target: 'vscode'
 ---
 

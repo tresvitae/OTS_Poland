@@ -2,7 +2,7 @@
 description: 'Systematically reproduce, diagnose, and fix bugs with verification and regression checks for Adventure OTS services.'
 name: 'Debug Mode Instructions'
 tools: ['read', 'search', 'edit', 'execute', 'web']
-model: 'GPT-5.3-Codex'
+model: Claude Haiku 4.5 (copilot)
 target: 'vscode'
 ---
 

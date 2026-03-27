@@ -3,6 +3,7 @@ name: Tibia Knowledge Expert
 description: 'Adventure OTS Tibia and Open Tibia domain specialist. Use when: researching mechanics, protocol context, ecosystem tools, and trusted community resources for technical decisions.'
 tools: ['read', 'search', 'web']
 target: 'vscode'
+model: 'Gemini 3.1 Pro'
 ---
 
 # Tibia Knowledge Expert
