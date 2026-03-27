@@ -27,6 +27,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - `debug.agent.md`
 - `expert-cpp-software-engineer.agent.md`
 - `tibia-client-expert.agent.md`
+- `tibia-knowledge-expert.agent.md`
 - `lua-gameplay-content.agent.md`
 - `nginx-edge-integration.agent.md`
 - `qa-regression.agent.md`
@@ -71,6 +72,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 | Runtime debugging and incident triage | `debug.agent.md` |
 | TFS C++ server code | `expert-cpp-software-engineer.agent.md` |
 | OTClient/OTCv8 work | `tibia-client-expert.agent.md` |
+| Tibia/Open Tibia/OTS technical and community knowledge | `tibia-knowledge-expert.agent.md` |
 | Database/schema/migrations | `mariadb.agent.md` |
 | Documentation only | `readme.agent.md` |
 | Git workflow issues | `git-workflow-master.agent.md` |
@@ -87,6 +89,7 @@ This directory contains Copilot customization assets for Adventure OTS:
 - Reproduce-first debugging: `debug.agent.md`
 - TFS C++ server changes: `expert-cpp-software-engineer.agent.md`
 - OTClient work: `tibia-client-expert.agent.md`
+- Tibia/Open Tibia/OTS research and protocol context: `tibia-knowledge-expert.agent.md`
 - Database/schema/migrations: `mariadb.agent.md`
 - Documentation-only work: `readme.agent.md`
 - Architecture discovery/risk mapping: `project-analyst.agent.md`, `code-archeologist.agent.md`
