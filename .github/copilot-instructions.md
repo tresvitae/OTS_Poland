@@ -1,6 +1,6 @@
 ---
 name: Adventure OTS Workspace Instructions
-description: "High-signal Copilot routing instructions for Adventure OTS. Use when: deciding which agent/instruction to apply for backend, frontend, nginx, Docker, gameplay scripts, or cross-component work."
+description: "High-signal Copilot routing instructions for Adventure OTS. Use when: deciding which agent/instruction to apply for backend, frontend, nginx, Docker, gameplay scripts, Tibia/OTS knowledge research, or cross-component work."
 applyTo: "**"
 ---
 
@@ -28,6 +28,7 @@ Use this matrix to choose the right specialization quickly.
 | Docker image/runtime stability | `docker-version-guardian` | `.github/instructions/containerization-docker-best-practices.instructions.md` |
 | TFS Lua gameplay scripts | `Lua Gameplay Content Expert` | `.github/instructions/lua-scripts.instructions.md` |
 | TFS C++ server changes | `C++ Expert` | `.github/instructions/cpp-server.instructions.md` |
+| Tibia/Open Tibia/OTS mechanics, protocol context, and community research | `Tibia Knowledge Expert` | `.github/instructions/context-engineering.instructions.md` |
 | Cross-cutting planning | `tech-lead-orchestrator` | `.github/instructions/context-engineering.instructions.md` |
 
 ## Canonical Paths

@@ -123,6 +123,7 @@ Recommended phased retirement:
 
 - Workspace instructions: `.github/copilot-instructions.md`
 - Authoring guidance for agents: `.github/instructions/agents.instructions.md`
+- Tibia knowledge specialist: `.github/agents/tibia-knowledge-expert.agent.md`
 - Nginx edge routing guidance: `.github/instructions/nginx-edge.instructions.md`
 - MariaDB guidance: `.github/instructions/mariadb.instructions.md`
 - QA regression guidance: `.github/instructions/qa-regression.instructions.md`
