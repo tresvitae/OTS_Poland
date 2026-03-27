@@ -278,8 +278,13 @@ void X11Window::terminate()
 void X11Window::internalOpenDisplay()
 {
     m_display = XOpenDisplay(nullptr);
-    if (!m_display)
-        g_logger.fatal("Unable to open X11 display");
+    if (!m_display) {
+        const auto display = std::getenv("DISPLAY");
+        g_logger.fatal(
+            "Unable to open X11 display (DISPLAY='{}'). On macOS, start XQuartz and launch from an X11-enabled shell.",
+            display ? display : "<unset>"
+        );
+    }
     m_screen = DefaultScreen(m_display);
 }
 

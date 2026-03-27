@@ -35,6 +35,7 @@ public:
     ProxyManager() : m_guard(make_work_guard(m_io))
     {
     }
+    ~ProxyManager() { terminate(); }
     void init();
     void terminate();
     void clear();

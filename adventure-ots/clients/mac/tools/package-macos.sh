@@ -173,7 +173,20 @@ fi
 rm -rf "$STAGE_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR" "$APP_ROOT/Contents/Frameworks"
 
-cp "$BINARY_PATH" "$MACOS_DIR/OtClient"
+cp "$BINARY_PATH" "$MACOS_DIR/OtClient-bin"
+chmod +x "$MACOS_DIR/OtClient-bin"
+
+cat > "$MACOS_DIR/OtClient" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Keep startup deterministic for Finder launches where cwd is not the app bundle.
+cd "$SCRIPT_DIR"
+
+exec "$SCRIPT_DIR/OtClient-bin" "$@"
+EOF
 chmod +x "$MACOS_DIR/OtClient"
 
 for dir_name in "${required_directories[@]}"; do
@@ -202,6 +215,22 @@ done
 ln -sfn ../Resources/data "$MACOS_DIR/data"
 ln -sfn ../Resources/modules "$MACOS_DIR/modules"
 ln -sfn ../Resources/init.lua "$MACOS_DIR/init.lua"
+
+link_resource_into_macos() {
+  local resource_name="$1"
+  if [[ -e "$RESOURCES_DIR/$resource_name" ]]; then
+    ln -sfn "../Resources/$resource_name" "$MACOS_DIR/$resource_name"
+  fi
+}
+
+# Expose additional runtime files from Contents/MacOS because startup resolves
+# some paths from the mounted work dir (for example /config.ini).
+link_resource_into_macos "config.ini"
+link_resource_into_macos "otclientrc.lua"
+link_resource_into_macos "meta.lua"
+link_resource_into_macos "mods"
+link_resource_into_macos "records"
+link_resource_into_macos "cacert.pem"
 
 cat > "$APP_ROOT/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>

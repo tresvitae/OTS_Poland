@@ -219,24 +219,15 @@ if command -v brew >/dev/null 2>&1; then
   BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
 fi
 
-X11_INCLUDE_ROOTS=()
-X11_LIBRARY_ROOTS=()
-
-if [[ -n "$BREW_PREFIX" ]]; then
-  X11_INCLUDE_ROOTS+=("$BREW_PREFIX/include")
-  X11_LIBRARY_ROOTS+=("$BREW_PREFIX/lib")
-fi
-
-X11_INCLUDE_ROOTS+=(
+# macOS OTClient: Pin X11/GLX to XQuartz (/opt/X11) exclusively to avoid library path mixing.
+# Homebrew X11 and XQuartz have incompatible GLX implementations that cause glXChooseFBConfig failures.
+# See: X11Window::init() -> internalChooseGLVisual() -> glXChooseFBConfig crash
+X11_INCLUDE_ROOTS=(
   "/opt/X11/include"
-  "/opt/homebrew/include"
-  "/usr/local/include"
 )
 
-X11_LIBRARY_ROOTS+=(
+X11_LIBRARY_ROOTS=(
   "/opt/X11/lib"
-  "/opt/homebrew/lib"
-  "/usr/local/lib"
 )
 
 X11_HEADER_PATH="$(find_file_in_roots "X11/Xlib.h" "${X11_INCLUDE_ROOTS[@]}" || true)"
