@@ -191,29 +191,55 @@ cd "$SCRIPT_DIR"
 # running X11 display.  Finder/Spotlight launches do NOT inherit DISPLAY,
 # so we must set it up ourselves.
 # ---------------------------------------------------------------------------
-XQUARTZ_APP="/Applications/Utilities/XQuartz.app"
+xquartz_running() {
+  pgrep -qx Xquartz >/dev/null 2>&1 || pgrep -qx X11.bin >/dev/null 2>&1
+}
 
-if [[ ! -d "$XQUARTZ_APP" ]]; then
-  osascript -e 'display alert "XQuartz Required" message "OtClient needs XQuartz to run.\n\nInstall it with:\n  brew install --cask xquartz\n\nThen log out and back in, or restart your Mac." as critical' 2>/dev/null || true
-  echo "Error: XQuartz is not installed at $XQUARTZ_APP" >&2
-  echo "Install with:  brew install --cask xquartz" >&2
-  exit 1
-fi
+open_xquartz() {
+  if open -a "XQuartz" >/dev/null 2>&1; then
+    return 0
+  fi
 
-# Start XQuartz if it is not already running.
-if ! pgrep -qx Xquartz && ! pgrep -qx X11.bin; then
-  open -a XQuartz
-  # Wait for the display server socket to appear (up to 10 seconds).
-  for i in $(seq 1 20); do
-    if [[ -e "/tmp/.X11-unix/X0" ]]; then
-      break
+  if command -v mdfind >/dev/null 2>&1; then
+    local xquartz_app
+    xquartz_app="$(mdfind 'kMDItemCFBundleIdentifier == "org.xquartz.X11"' | head -n 1 || true)"
+    if [[ -n "$xquartz_app" && -d "$xquartz_app" ]]; then
+      open "$xquartz_app" >/dev/null 2>&1 && return 0
+    fi
+  fi
+
+  return 1
+}
+
+wait_for_xquartz_socket() {
+  local socket_path="/tmp/.X11-unix/X0"
+  local attempts=20
+  local i
+
+  for i in $(seq 1 "$attempts"); do
+    if [[ -S "$socket_path" ]]; then
+      return 0
     fi
     sleep 0.5
   done
-  if [[ ! -e "/tmp/.X11-unix/X0" ]]; then
-    osascript -e 'display alert "XQuartz Timeout" message "XQuartz was started but the display server did not become ready in time.\n\nTry launching XQuartz manually first, then re-open OtClient." as warning' 2>/dev/null || true
-    echo "Warning: XQuartz display server socket not found after waiting." >&2
+
+  return 1
+}
+
+# Start XQuartz if it is not already running.
+if ! xquartz_running; then
+  if ! open_xquartz; then
+    osascript -e 'display alert "XQuartz Required" message "OtClient needs XQuartz to run, but it could not be launched automatically.\n\nInstall or reinstall it with:\n  brew install --cask xquartz\n\nThen launch XQuartz once and re-open OtClient." as critical' 2>/dev/null || true
+    echo "Error: Failed to launch XQuartz." >&2
+    echo "Install or reinstall with: brew install --cask xquartz" >&2
+    exit 1
   fi
+fi
+
+if ! wait_for_xquartz_socket; then
+  osascript -e 'display alert "XQuartz Timeout" message "XQuartz did not become ready in time.\n\nLaunch XQuartz manually, wait a few seconds, then re-open OtClient." as critical' 2>/dev/null || true
+  echo "Error: XQuartz display server socket (/tmp/.X11-unix/X0) not available after waiting." >&2
+  exit 1
 fi
 
 # Set DISPLAY if the environment does not already provide it.

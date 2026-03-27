@@ -19,6 +19,10 @@ Canonical outputs are written to `adventure-ots/frontend/public/downloads/macos`
 - `adventure-ots-client-macos-arm64.zip`
 - `adventure-ots-client-macos-arm64.zip.sha256`
 
+**macOS Sequoia `com.apple.provenance` quarantine restriction**
+
+If you encounter "mkdir: Operation not permitted" during the macOS OTClient build, do not run the build script from an AI assistant's terminal. macOS Sequoia's `com.apple.provenance` quarantine blocks some directories. Delete the locked directories (such as `.local` or `dist` inside the build output area) using your own unrestricted Terminal.app or Finder, and then run the build directly from your native terminal.
+
 ## test-client.ps1
 
 `scripts/test-client.ps1` verifies freshly packaged OTClient bundles without touching your local install:

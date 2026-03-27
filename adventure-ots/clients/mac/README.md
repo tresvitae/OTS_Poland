@@ -98,6 +98,16 @@ Deactivate when done:
 deactivate_otclient_arm64
 ```
 
+## Troubleshooting
+
+### macOS Sequoia `com.apple.provenance` Quarantine Restriction
+If you encounter a `mkdir: Operation not permitted` error during the macOS OTClient build process, this may be due to macOS Sequoia's `com.apple.provenance` quarantine restriction. This security feature can block build scripts from creating directories if they are run from within an AI assistant's integrated terminal or another quarantined app.
+
+To resolve this:
+1. Open your regular, unrestricted native macOS Terminal or Finder outside of the AI assistant/IDE.
+2. Delete the locked directories (such as `.local` or `dist`) entirely.
+3. Run the build script again directly from your native terminal app (e.g., Terminal.app or iTerm2).
+
 ## Step-by-step setup (Apple Silicon native)
 
 ### 1) Install prerequisites
