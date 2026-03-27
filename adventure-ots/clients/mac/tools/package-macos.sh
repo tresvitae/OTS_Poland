@@ -185,6 +185,43 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Keep startup deterministic for Finder launches where cwd is not the app bundle.
 cd "$SCRIPT_DIR"
 
+# ---------------------------------------------------------------------------
+# XQuartz bootstrap – ensure the X11 display server is available on macOS.
+# The OTClient binary links against XQuartz's libX11/libGLX and requires a
+# running X11 display.  Finder/Spotlight launches do NOT inherit DISPLAY,
+# so we must set it up ourselves.
+# ---------------------------------------------------------------------------
+XQUARTZ_APP="/Applications/Utilities/XQuartz.app"
+
+if [[ ! -d "$XQUARTZ_APP" ]]; then
+  osascript -e 'display alert "XQuartz Required" message "OtClient needs XQuartz to run.\n\nInstall it with:\n  brew install --cask xquartz\n\nThen log out and back in, or restart your Mac." as critical' 2>/dev/null || true
+  echo "Error: XQuartz is not installed at $XQUARTZ_APP" >&2
+  echo "Install with:  brew install --cask xquartz" >&2
+  exit 1
+fi
+
+# Start XQuartz if it is not already running.
+if ! pgrep -qx Xquartz && ! pgrep -qx X11.bin; then
+  open -a XQuartz
+  # Wait for the display server socket to appear (up to 10 seconds).
+  for i in $(seq 1 20); do
+    if [[ -e "/tmp/.X11-unix/X0" ]]; then
+      break
+    fi
+    sleep 0.5
+  done
+  if [[ ! -e "/tmp/.X11-unix/X0" ]]; then
+    osascript -e 'display alert "XQuartz Timeout" message "XQuartz was started but the display server did not become ready in time.\n\nTry launching XQuartz manually first, then re-open OtClient." as warning' 2>/dev/null || true
+    echo "Warning: XQuartz display server socket not found after waiting." >&2
+  fi
+fi
+
+# Set DISPLAY if the environment does not already provide it.
+export DISPLAY="${DISPLAY:-:0}"
+
+# Set XAUTHORITY if missing (XQuartz default).
+export XAUTHORITY="${XAUTHORITY:-$HOME/.Xauthority}"
+
 exec "$SCRIPT_DIR/OtClient-bin" "$@"
 EOF
 chmod +x "$MACOS_DIR/OtClient"

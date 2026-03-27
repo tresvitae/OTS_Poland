@@ -110,6 +110,10 @@ xcode-select --install
 brew update
 brew install cmake ninja git pkg-config sccache
 
+# XQuartz – required at runtime for X11/GLX display
+brew install --cask xquartz
+# After installing XQuartz, log out and back in (or restart) so DISPLAY is available.
+
 # Verify architecture and toolchain
 uname -m
 clang --version
@@ -120,6 +124,7 @@ ninja --version
 Expected:
 
 - `uname -m` returns `arm64`.
+- XQuartz is installed at `/Applications/Utilities/XQuartz.app` and `/opt/X11`.
 - `cmake` is 3.22+ (preset file requires at least that).
 
 ### 2) Bootstrap vcpkg
@@ -416,10 +421,10 @@ nc -vz 127.0.0.1 7171
 curl -I http://localhost/downloads/macos/adventure-ots-client-macos-arm64.zip
 ```
 
-5. Launch app locally and validate core flow:
+5. Launch app locally and validate core flow (XQuartz will be started automatically by the wrapper if not already running):
 
 ```bash
-open adventure-ots/clients/mac/.local/dist/OtClient.app
+open adventure-ots/clients/mac/dist/macos/OtClient.app
 ```
 
 Manual checks:
@@ -459,6 +464,7 @@ git rm -r --cached --ignore-unmatch \
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
+| `Unable to open X11 display` / `SIGABRT` on launch | XQuartz not installed or not running; `DISPLAY` unset | Install XQuartz (`brew install --cask xquartz`), log out and back in. The app wrapper auto-starts XQuartz, but the first install requires a session restart. |
 | `xcode-select: note: no developer tools were found` | Xcode CLT missing | Run `xcode-select --install`, then reopen shell. |
 | `Could not find toolchain file ... vcpkg.cmake` | `VCPKG_ROOT` not exported correctly | Re-source activation script and verify `echo "$VCPKG_ROOT"` and `test -f "$CMAKE_TOOLCHAIN_FILE"`. |
 | Build resolves x86_64 instead of arm64 | Arch not pinned or shell running under Rosetta | Verify `uname -m` is `arm64`; configure with `-D CMAKE_OSX_ARCHITECTURES=arm64`; avoid Rosetta terminal. |
