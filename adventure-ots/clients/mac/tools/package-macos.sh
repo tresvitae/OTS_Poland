@@ -266,6 +266,12 @@ int main(int argc, char *argv[]) {
             setenv("XAUTHORITY", xauth, 0);
         }
     }
+    /* Force indirect GLX rendering.  Apple deprecated hardware OpenGL/DRI,
+       so the XQuartz Apple-DRI extension returns BadValue.  Indirect
+       rendering uses the software rasteriser instead. */
+    if (!getenv("LIBGL_ALWAYS_INDIRECT")) {
+        setenv("LIBGL_ALWAYS_INDIRECT", "1", 0);
+    }
 
     /* Build path to the real binary in Contents/Helpers and exec it. */
     char real_bin[4096];

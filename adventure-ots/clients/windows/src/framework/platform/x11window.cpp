@@ -285,6 +285,27 @@ void X11Window::internalOpenDisplay()
             display ? display : "<unset>"
         );
     }
+
+    // Install a custom X error handler to survive non-fatal X errors.
+    // On macOS with XQuartz, the Apple-DRI extension (opcode 129) triggers
+    // a BadValue error during GLX initialisation because Apple deprecated
+    // hardware OpenGL/DRI on Apple Silicon.  The default Xlib handler
+    // calls exit(1), crashing the client before it can fall back to
+    // indirect rendering.  We suppress that specific error here.
+    XSetErrorHandler([](Display* dpy, XErrorEvent* event) -> int {
+        // Apple-DRI extension opcode is 129 on XQuartz.
+        if (event->error_code == BadValue && event->request_code >= 128) {
+            // Likely an extension error (Apple-DRI, DRI2, etc.) — non-fatal.
+            return 0;
+        }
+        // For all other errors, log and continue (non-fatal).
+        char buf[256];
+        XGetErrorText(dpy, event->error_code, buf, sizeof(buf));
+        g_logger.error("X Error: {} (opcode {}.{})", buf,
+                       event->request_code, event->minor_code);
+        return 0;
+    });
+
     m_screen = DefaultScreen(m_display);
 }
 
