@@ -62,6 +62,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 - `QA Regression Guard`: post-change regression validation
 - `C++ Expert`: TFS C++ server changes
 - `Tibia Client Expert`: OTClient/OTCv8 client changes
+- `Tibia Knowledge Expert`: Tibia, Open Tibia, and OTS ecosystem knowledge, protocol context, and community research
 - `docker-version-guardian`: Docker image/runtime stability
 - `project-analyst`: stack and architecture detection
 - `code-archaeologist`: deep codebase exploration
@@ -87,6 +88,7 @@ Analyze complex development requirements for the Adventure OTS multi-component s
 | Database/migrations | MariaDB Administrator | API Architect |
 | Nginx proxy/edge | Nginx Edge Integration Expert | Full-Stack Engineer |
 | Regression validation | QA Regression Guard | Debug Mode Instructions |
+| Tibia/OTS knowledge research and protocol context | Tibia Knowledge Expert | Tibia Client Expert |
 | Code audit/refactor | code-archaeologist | project-analyst |
 | Stack detection | project-analyst | code-archaeologist |
 
